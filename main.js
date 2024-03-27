@@ -63,6 +63,37 @@ const sunMaterial = new THREE.MeshBasicMaterial({
 const sun = new THREE.Mesh(sunGeometry, sunMaterial);
 scene.add(sun);
 
+//create planets function
+const createPlanet = (radius, texture, position, ring) => {
+  const geometry = new THREE.SphereGeometry(radius, 30, 30);
+  const material = new THREE.MeshStandardMaterial({
+    map: textureLoader.load(texture),
+  });
+  const planet = new THREE.Mesh(geometry, material);
+  const planetOrbit = new THREE.Object3D();
+  planetOrbit.add(planet);
+
+  if (ring) {
+    const ringGeometry = new THREE.RingGeometry(
+      ring.innerRadius,
+      ring.outerRadius,
+      32
+    );
+    const ringMaterial = new THREE.MeshBasicMaterial({
+      map: textureLoader.load(ring.texture),
+      side: THREE.DoubleSide,
+    });
+    const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+    ringMesh.rotation.x = Math.PI / -2;
+    ringMesh.position.x = position;
+    planetOrbit.add(ringMesh);
+  }
+  scene.add(planetOrbit);
+  planet.position.x = position;
+  return { planet, planetOrbit };
+};
+
+
 function animate() {
   sun.rotateY(0.004);
   renderer.render(scene, camera);
