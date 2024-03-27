@@ -93,6 +93,9 @@ const createPlanet = (radius, texture, position, ring) => {
   return { planet, planetOrbit };
 };
 
+//Points of light
+const pointLight = new THREE.PointLight(0xffffff, 30000, 300);
+scene.add(pointLight);
 
 function animate() {
   sun.rotateY(0.004);
