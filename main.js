@@ -43,17 +43,17 @@ const ambientLight = new THREE.AmbientLight(0x333333);
 scene.add(ambientLight);
 
 //Texture loader
-const cubeTextureLoader = new THREE.CubeTextureLoader();
-scene.background = cubeTextureLoader.load([
-  starsTexture,
-  starsTexture,
-  starsTexture,
-  starsTexture,
-  starsTexture,
-  starsTexture,
-]);
 
 const textureLoader = new THREE.TextureLoader();
+
+const geometry = new THREE.SphereGeometry(1000, 60, 40);
+// invert the geometry on the x-axis so that all of the faces point inward
+geometry.scale(-1, 1, 1);
+
+const texture = textureLoader.load(starsTexture);
+const material = new THREE.MeshBasicMaterial({ map: texture });
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
 
 // Sun
 const sunGeometry = new THREE.SphereGeometry(16, 30, 30);
