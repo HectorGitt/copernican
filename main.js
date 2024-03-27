@@ -35,7 +35,7 @@ const camera = new THREE.PerspectiveCamera(
 const orbit = new OrbitControls(camera, renderer.domElement);
 
 // Camera positioning
-camera.position.set(6, 8, 14);
+camera.position.set(-90, 140, 140);
 orbit.update();
 
 //added light
@@ -53,15 +53,18 @@ scene.background = cubeTextureLoader.load([
   starsTexture,
 ]);
 
-// Sets a 12 by 12 gird helper
-const gridHelper = new THREE.GridHelper(12, 12);
-scene.add(gridHelper);
+const textureLoader = new THREE.TextureLoader();
 
-// Sets the x, y, and z axes with each having a length of 4
-const axesHelper = new THREE.AxesHelper(4);
-scene.add(axesHelper);
+// Sun
+const sunGeometry = new THREE.SphereGeometry(16, 30, 30);
+const sunMaterial = new THREE.MeshBasicMaterial({
+  map: textureLoader.load(sunTexture),
+});
+const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+scene.add(sun);
 
 function animate() {
+  sun.rotateY(0.004);
   renderer.render(scene, camera);
 }
 
