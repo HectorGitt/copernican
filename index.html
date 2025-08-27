@@ -1,13 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="main.js"></script>
-  </body>
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Copernican Solar System - NASA EONET Data</title>
+	</head>
+	<body>
+		<div id="app"></div>
+
+		<!-- Navigation -->
+		<nav id="main-nav">
+			<h1>🌌 Copernican Solar System</h1>
+			<a href="earth-view.html" class="nav-btn">🌍 Earth View</a>
+		</nav>
+
+		<!-- EONET Data Controls -->
+		<div id="eonet-controls">
+			<h3>NASA EONET Events</h3>
+			<div class="filter-buttons">
+				<button id="filter-all" class="filter-btn active">
+					All Events
+				</button>
+				<button id="filter-wildfires" class="filter-btn">
+					🔥 Wildfires
+				</button>
+				<button id="filter-volcanoes" class="filter-btn">
+					🌋 Volcanoes
+				</button>
+				<button id="filter-earthquakes" class="filter-btn">
+					🌍 Earthquakes
+				</button>
+				<button id="filter-storms" class="filter-btn">🌪️ Storms</button>
+				<button id="filter-floods" class="filter-btn">🌊 Floods</button>
+			</div>
+			<div id="event-counter">Loading events...</div>
+			<div class="legend">
+				<div class="legend-item">
+					<span class="marker wildfire"></span>Wildfire
+				</div>
+				<div class="legend-item">
+					<span class="marker volcano"></span>Volcano
+				</div>
+				<div class="legend-item">
+					<span class="marker earthquake"></span>Earthquake
+				</div>
+				<div class="legend-item">
+					<span class="marker storm"></span>Storm
+				</div>
+				<div class="legend-item">
+					<span class="marker flood"></span>Flood
+				</div>
+			</div>
+		</div>
+
+		<script type="module" src="main.js"></script>
+	</body>
 </html>

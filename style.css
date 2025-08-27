@@ -1,8 +1,164 @@
 body,
 html {
-  margin: 0;
-  padding: 0;
-  font-family: "Open Sans", sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
+	margin: 0;
+	padding: 0;
+	font-family: "Open Sans", sans-serif;
+	font-size: 16px;
+	line-height: 1.5;
+	overflow: hidden;
+}
+
+/* Main Navigation */
+#main-nav {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	background: rgba(0, 0, 0, 0.8);
+	color: white;
+	padding: 15px 20px;
+	border-radius: 10px;
+	backdrop-filter: blur(10px);
+	z-index: 2000;
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+#main-nav h1 {
+	margin: 0;
+	color: #4caf50;
+	font-size: 16px;
+}
+
+#main-nav .nav-btn {
+	background: rgba(76, 175, 80, 0.2);
+	border: 1px solid rgba(76, 175, 80, 0.5);
+	color: white;
+	padding: 8px 16px;
+	border-radius: 25px;
+	text-decoration: none;
+	font-size: 14px;
+	transition: all 0.3s ease;
+}
+
+#main-nav .nav-btn:hover {
+	background: rgba(76, 175, 80, 0.4);
+	transform: translateY(-2px);
+}
+
+/* EONET Controls Styling */
+#eonet-controls {
+	position: fixed;
+	top: 20px;
+	left: 20px;
+	background: rgba(0, 0, 0, 0.8);
+	color: white;
+	padding: 20px;
+	border-radius: 10px;
+	backdrop-filter: blur(10px);
+	max-width: 300px;
+	z-index: 1000;
+	font-family: "Segoe UI", Arial, sans-serif;
+}
+
+#eonet-controls h3 {
+	margin: 0 0 15px 0;
+	color: #4caf50;
+	font-size: 18px;
+	text-align: center;
+}
+
+.filter-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 15px;
+}
+
+.filter-btn {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	color: white;
+	padding: 8px 12px;
+	border-radius: 20px;
+	cursor: pointer;
+	font-size: 12px;
+	transition: all 0.3s ease;
+	white-space: nowrap;
+}
+
+.filter-btn:hover {
+	background: rgba(255, 255, 255, 0.2);
+	transform: translateY(-2px);
+}
+
+.filter-btn.active {
+	background: #4caf50;
+	border-color: #4caf50;
+	box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+#event-counter {
+	text-align: center;
+	font-size: 14px;
+	margin-bottom: 15px;
+	color: #ccc;
+}
+
+.legend {
+	border-top: 1px solid rgba(255, 255, 255, 0.2);
+	padding-top: 15px;
+}
+
+.legend-item {
+	display: flex;
+	align-items: center;
+	margin-bottom: 8px;
+	font-size: 12px;
+}
+
+.marker {
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	margin-right: 10px;
+	display: inline-block;
+}
+
+.marker.wildfire {
+	background: #ff4500;
+	box-shadow: 0 0 8px #ff4500;
+}
+
+.marker.volcano {
+	background: #ff0000;
+	box-shadow: 0 0 8px #ff0000;
+}
+
+.marker.earthquake {
+	background: #8b4513;
+	box-shadow: 0 0 8px #8b4513;
+}
+
+.marker.storm {
+	background: #ffff00;
+	box-shadow: 0 0 8px #ffff00;
+}
+
+.marker.flood {
+	background: #0080ff;
+	box-shadow: 0 0 8px #0080ff;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+	#eonet-controls {
+		max-width: 250px;
+		padding: 15px;
+	}
+
+	.filter-btn {
+		font-size: 11px;
+		padding: 6px 10px;
+	}
 }
