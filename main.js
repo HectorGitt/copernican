@@ -120,338 +120,431 @@ const pluto = createPlanet(2.8, plutoTexture, 216);
 const pointLight = new THREE.PointLight(0xffffff, 30000, 300);
 scene.add(pointLight);
 
-// NASA EONET Data Integration
-class EONETDataOverlay {
-	constructor(earthObject) {
-		this.earth = earthObject;
-		this.events = [];
-		this.markers = [];
-		this.eventTypes = {
-			wildfires: { color: 0xff4500, size: 0.3 },
-			volcanoes: { color: 0xff0000, size: 0.4 },
-			earthquakes: { color: 0x8b4513, size: 0.25 },
-			floods: { color: 0x0080ff, size: 0.35 },
-			storms: { color: 0xffff00, size: 0.3 },
-			droughts: { color: 0x8b4513, size: 0.2 },
-			dustHaze: { color: 0xffd700, size: 0.25 },
-			seaLakeIce: { color: 0x87ceeb, size: 0.2 },
-			snow: { color: 0xffffff, size: 0.2 },
-			landslides: { color: 0x654321, size: 0.25 },
-			manmade: { color: 0xff69b4, size: 0.2 },
+// Navigation and UI Controls
+class NavigationController {
+	constructor() {
+		this.animationSpeed = 1;
+		this.isPaused = false;
+		this.zoomSpeed = 1;
+		this.rotateSpeed = 1;
+		this.sunIntensity = 30000;
+		this.ambientIntensity = 0.2;
+		this.focusedPlanet = null;
+
+		this.planetPositions = {
+			sun: { x: 0, y: 0, z: 0 },
+			mercury: { x: 28, y: 0, z: 0 },
+			venus: { x: 44, y: 0, z: 0 },
+			earth: { x: 62, y: 0, z: 0 },
+			mars: { x: 78, y: 0, z: 0 },
+			jupiter: { x: 100, y: 0, z: 0 },
+			saturn: { x: 138, y: 0, z: 0 },
+			uranus: { x: 176, y: 0, z: 0 },
+			neptune: { x: 200, y: 0, z: 0 },
+			pluto: { x: 216, y: 0, z: 0 },
 		};
-		this.fetchData();
-	}
 
-	async fetchData() {
-		try {
-			console.log("Fetching NASA EONET data...");
+		this.planetScales = {
+			sun: 16,
+			mercury: 3.2,
+			venus: 5.8,
+			earth: 6,
+			mars: 4,
+			jupiter: 12,
+			saturn: 9.5,
+			uranus: 7,
+			neptune: 7,
+			pluto: 2.8,
+		};
 
-			// Try direct API call first
-			let response;
-			try {
-				response = await fetch(
-					"https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=100"
-				);
-			} catch (corsError) {
-				console.log(
-					"Direct API access blocked by CORS, trying alternative approach..."
-				);
-				// If CORS blocks direct access, we'll use sample data for now
-				// In production, you would set up a proxy server or use a CORS proxy
-				throw new Error("CORS blocked");
-			}
+		this.setupEventListeners();
+		this.updateUI();
 
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-
-			const data = await response.json();
-			console.log("Fetched EONET data:", data);
-			this.events = data.events || [];
-			console.log(`Loaded ${this.events.length} events from NASA EONET`);
-			this.createMarkers();
-		} catch (error) {
-			console.error("Error fetching EONET data:", error);
-			console.log("Loading sample data for demonstration...");
-			this.createSampleData();
+		// Initialize speed value display
+		const speedValue = document.getElementById("speed-value");
+		if (speedValue) {
+			speedValue.textContent = `${this.animationSpeed.toFixed(1)}x`;
 		}
 	}
 
-	createSampleData() {
-		// Enhanced sample data for demonstration if API fails
-		this.events = [
-			{
-				title: "California Wildfire",
-				categories: [{ title: "Wildfires" }],
-				geometry: [{ coordinates: [-120.5, 35.5] }],
-			},
-			{
-				title: "Mount Etna Eruption",
-				categories: [{ title: "Volcanoes" }],
-				geometry: [{ coordinates: [15.0, 37.7] }],
-			},
-			{
-				title: "Japan Earthquake",
-				categories: [{ title: "Earthquakes" }],
-				geometry: [{ coordinates: [140.0, 36.0] }],
-			},
-			{
-				title: "Hurricane Atlantic",
-				categories: [{ title: "Severe Storms" }],
-				geometry: [{ coordinates: [-75.0, 25.0] }],
-			},
-			{
-				title: "Bangladesh Flood",
-				categories: [{ title: "Floods" }],
-				geometry: [{ coordinates: [90.0, 24.0] }],
-			},
-			{
-				title: "Amazon Fire",
-				categories: [{ title: "Wildfires" }],
-				geometry: [{ coordinates: [-60.0, -3.0] }],
-			},
-			{
-				title: "Iceland Volcano",
-				categories: [{ title: "Volcanoes" }],
-				geometry: [{ coordinates: [-19.0, 64.0] }],
-			},
-			{
-				title: "Turkey Earthquake",
-				categories: [{ title: "Earthquakes" }],
-				geometry: [{ coordinates: [37.0, 38.0] }],
-			},
-			{
-				title: "Australian Bushfire",
-				categories: [{ title: "Wildfires" }],
-				geometry: [{ coordinates: [145.0, -37.0] }],
-			},
-			{
-				title: "Philippines Typhoon",
-				categories: [{ title: "Severe Storms" }],
-				geometry: [{ coordinates: [121.0, 14.0] }],
-			},
-			{
-				title: "European Flood",
-				categories: [{ title: "Floods" }],
-				geometry: [{ coordinates: [7.0, 51.0] }],
-			},
-			{
-				title: "Indonesia Volcano",
-				categories: [{ title: "Volcanoes" }],
-				geometry: [{ coordinates: [110.0, -7.5] }],
-			},
-		];
-		console.log(
-			`Using sample EONET data with ${this.events.length} events`
-		);
-		this.createMarkers();
-	}
-
-	// Convert latitude/longitude to 3D coordinates on sphere
-	latLonToVector3(lat, lon, radius) {
-		const phi = (90 - lat) * (Math.PI / 180);
-		const theta = (lon + 180) * (Math.PI / 180);
-
-		const x = -(radius * Math.sin(phi) * Math.cos(theta));
-		const z = radius * Math.sin(phi) * Math.sin(theta);
-		const y = radius * Math.cos(phi);
-
-		return new THREE.Vector3(x, y, z);
-	}
-
-	getEventType(categories) {
-		if (!categories || categories.length === 0) return "manmade";
-
-		const category = categories[0].title.toLowerCase();
-		if (category.includes("wildfire")) return "wildfires";
-		if (category.includes("volcano")) return "volcanoes";
-		if (category.includes("earthquake")) return "earthquakes";
-		if (category.includes("flood")) return "floods";
-		if (
-			category.includes("storm") ||
-			category.includes("cyclone") ||
-			category.includes("hurricane")
-		)
-			return "storms";
-		if (category.includes("drought")) return "droughts";
-		if (category.includes("dust") || category.includes("haze"))
-			return "dustHaze";
-		if (category.includes("ice")) return "seaLakeIce";
-		if (category.includes("snow")) return "snow";
-		if (category.includes("landslide")) return "landslides";
-
-		return "manmade";
-	}
-
-	createMarkers() {
-		// Clear existing markers
-		this.markers.forEach((marker) => {
-			this.earth.planetOrbit.remove(marker);
+	setupEventListeners() {
+		// Navigation toggle button
+		document.getElementById("nav-toggle")?.addEventListener("click", () => {
+			this.toggleNavigationMenu();
 		});
-		this.markers = [];
 
-		const earthRadius = 6; // Earth radius in your scene
+		// Mini info bar buttons
+		document.getElementById("info-btn")?.addEventListener("click", () => {
+			this.togglePanel("info-panel");
+		});
 
-		this.events.forEach((event) => {
-			if (!event.geometry || event.geometry.length === 0) return;
-
-			const coords = event.geometry[0].coordinates;
-			if (coords.length < 2) return;
-
-			const lon = coords[0];
-			const lat = coords[1];
-
-			// Get event type and visual properties
-			const eventType = this.getEventType(event.categories);
-			const properties = this.eventTypes[eventType];
-
-			// Create marker geometry
-			const markerGeometry = new THREE.SphereGeometry(
-				properties.size,
-				8,
-				8
-			);
-			const markerMaterial = new THREE.MeshBasicMaterial({
-				color: properties.color,
-				transparent: true,
-				opacity: 0.8,
+		document
+			.getElementById("controls-btn")
+			?.addEventListener("click", () => {
+				this.togglePanel("controls-panel");
 			});
 
-			const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+		// Control buttons
+		document
+			.getElementById("reset-camera")
+			?.addEventListener("click", () => {
+				this.resetCamera();
+			});
 
-			// Position marker on Earth surface
-			const position = this.latLonToVector3(lat, lon, earthRadius + 0.1);
-			marker.position.copy(position);
+		document
+			.getElementById("solar-overview")
+			?.addEventListener("click", () => {
+				this.solarSystemOverview();
+			});
 
-			// Add pulsing animation
-			marker.userData = {
-				originalScale: properties.size,
-				phase: Math.random() * Math.PI * 2,
-				eventData: event,
-				eventType: eventType,
-			};
+		document
+			.getElementById("toggle-fullscreen")
+			?.addEventListener("click", () => {
+				this.toggleFullscreen();
+			});
 
-			// Add to Earth's orbit so it rotates with Earth
-			this.earth.planetOrbit.add(marker);
-			this.markers.push(marker);
+		// Animation speed slider
+		document
+			.getElementById("animation-speed")
+			?.addEventListener("input", (e) => {
+				this.animationSpeed = parseFloat(e.target.value);
+				document.getElementById(
+					"speed-value"
+				).textContent = `${this.animationSpeed.toFixed(1)}x`;
+				this.updateAnimationSpeed();
+			});
+
+		// Pause animation checkbox
+		document
+			.getElementById("pause-animation")
+			?.addEventListener("change", (e) => {
+				this.isPaused = e.target.checked;
+				this.updateUI();
+			});
+
+		// Keyboard shortcuts
+		document.addEventListener("keydown", (e) => {
+			this.handleKeyboard(e);
 		});
 
-		console.log(`Created ${this.markers.length} event markers on Earth`);
-	}
-
-	animate() {
-		// Animate markers with pulsing effect
-		this.markers.forEach((marker) => {
-			const userData = marker.userData;
-			const pulseScale =
-				1 + 0.3 * Math.sin(Date.now() * 0.005 + userData.phase);
-			marker.scale.setScalar(pulseScale);
+		// Click outside to close panels
+		document.addEventListener("click", (e) => {
+			if (
+				!e.target.closest(".nav-panel") &&
+				!e.target.closest(".mini-btn") &&
+				!e.target.closest("#nav-toggle")
+			) {
+				this.hideAllPanels();
+			}
 		});
 	}
 
-	// Method to filter events by type
-	filterEventsByType(eventType) {
-		this.markers.forEach((marker) => {
-			marker.visible =
-				eventType === "all" || marker.userData.eventType === eventType;
-		});
+	toggleNavigationMenu() {
+		const navMenu = document.querySelector(".nav-menu");
+		const toggleBtn = document.getElementById("nav-toggle");
+
+		if (navMenu) {
+			const isHidden =
+				navMenu.style.display === "none" ||
+				navMenu.style.display === "";
+			navMenu.style.display = isHidden ? "flex" : "none";
+
+			if (toggleBtn) {
+				toggleBtn.classList.toggle("active", isHidden);
+			}
+		}
 	}
 
-	// Method to get event info (for future UI integration)
-	getEventInfo(marker) {
-		return marker.userData.eventData;
+	togglePanel(panelId) {
+		const panel = document.getElementById(panelId);
+		const isHidden = panel.classList.contains("hidden");
+
+		this.hideAllPanels();
+
+		if (isHidden) {
+			this.showPanel(panelId);
+		}
+	}
+
+	showPanel(panelId) {
+		const panel = document.getElementById(panelId);
+		if (panel) {
+			panel.classList.remove("hidden");
+		}
+	}
+
+	hidePanel(panelId) {
+		const panel = document.getElementById(panelId);
+		if (panel) {
+			panel.classList.add("hidden");
+		}
+	}
+
+	hideAllPanels() {
+		const panels = document.querySelectorAll(".nav-panel");
+		panels.forEach((panel) => panel.classList.add("hidden"));
+	}
+
+	focusOnPlanet(planetName) {
+		if (!this.planetPositions[planetName]) return;
+
+		const position = this.planetPositions[planetName];
+		const scale = this.planetScales[planetName] || 6;
+
+		// Calculate camera position for good view of the planet
+		const distance = scale * 8; // Distance based on planet size
+		const height = scale * 3; // Height above the planet
+
+		// Smooth camera movement
+		const targetPosition = new THREE.Vector3(
+			position.x + distance,
+			position.y + height,
+			position.z + distance
+		);
+
+		const targetLookAt = new THREE.Vector3(
+			position.x,
+			position.y,
+			position.z
+		);
+
+		// Animate camera to new position
+		this.animateCamera(targetPosition, targetLookAt);
+
+		// Update focused planet
+		this.focusedPlanet = planetName;
+		this.updatePlanetButtons();
+		this.updateUI();
+
+		console.log(`Focusing on ${planetName}`);
+	}
+
+	animateCamera(targetPosition, targetLookAt) {
+		const startPosition = camera.position.clone();
+		const startLookAt = orbit.target.clone();
+
+		const duration = 1000; // 1 second animation
+		const startTime = Date.now();
+
+		const animate = () => {
+			const elapsed = Date.now() - startTime;
+			const progress = Math.min(elapsed / duration, 1);
+
+			// Easing function for smooth animation
+			const easeInOutCubic =
+				progress < 0.5
+					? 4 * progress * progress * progress
+					: 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+			// Interpolate position
+			camera.position.lerpVectors(
+				startPosition,
+				targetPosition,
+				easeInOutCubic
+			);
+
+			// Interpolate look-at target
+			orbit.target.lerpVectors(startLookAt, targetLookAt, easeInOutCubic);
+			orbit.update();
+
+			if (progress < 1) {
+				requestAnimationFrame(animate);
+			}
+		};
+
+		animate();
+	}
+
+	resetCamera() {
+		const targetPosition = new THREE.Vector3(-90, 140, 140);
+		const targetLookAt = new THREE.Vector3(0, 0, 0);
+
+		this.animateCamera(targetPosition, targetLookAt);
+		this.focusedPlanet = null;
+		this.updatePlanetButtons();
+		this.updateUI();
+	}
+
+	solarSystemOverview() {
+		const targetPosition = new THREE.Vector3(0, 300, 300);
+		const targetLookAt = new THREE.Vector3(0, 0, 0);
+
+		this.animateCamera(targetPosition, targetLookAt);
+		this.focusedPlanet = null;
+		this.updatePlanetButtons();
+		this.updateUI();
+	}
+
+	updatePlanetButtons() {
+		document.querySelectorAll(".planet-btn").forEach((btn) => {
+			btn.classList.remove("active");
+		});
+
+		if (this.focusedPlanet) {
+			const activeBtn = document.querySelector(
+				`[data-planet="${this.focusedPlanet}"]`
+			);
+			if (activeBtn) {
+				activeBtn.classList.add("active");
+			}
+		}
+	}
+
+	updateAnimationSpeed() {
+		// This will be used in the animation loop
+	}
+
+	toggleFullscreen() {
+		if (!document.fullscreenElement) {
+			document.documentElement.requestFullscreen().catch((err) => {
+				console.log(
+					`Error attempting to enable fullscreen: ${err.message}`
+				);
+			});
+		} else {
+			document.exitFullscreen();
+		}
+	}
+
+	handleKeyboard(e) {
+		// Prevent default behavior for our shortcuts
+		const shortcuts = [
+			" ",
+			"r",
+			"f",
+			"i",
+			"c",
+			"1",
+			"2",
+			"3",
+			"4",
+			"5",
+			"6",
+			"7",
+			"8",
+			"9",
+		];
+
+		if (shortcuts.includes(e.key.toLowerCase())) {
+			e.preventDefault();
+		}
+
+		switch (e.key.toLowerCase()) {
+			case " ": // Spacebar - pause/resume
+				this.isPaused = !this.isPaused;
+				const pauseCheckbox =
+					document.getElementById("pause-animation");
+				if (pauseCheckbox) {
+					pauseCheckbox.checked = this.isPaused;
+				}
+				this.updateUI();
+				break;
+
+			case "r": // Reset camera
+				this.resetCamera();
+				break;
+
+			case "f": // Toggle fullscreen
+				this.toggleFullscreen();
+				break;
+
+			case "i": // Toggle info panel
+				this.togglePanel("info-panel");
+				break;
+
+			case "c": // Toggle controls panel
+				this.togglePanel("controls-panel");
+				break;
+
+			case "1":
+				this.focusOnPlanet("sun");
+				break;
+			case "2":
+				this.focusOnPlanet("mercury");
+				break;
+			case "3":
+				this.focusOnPlanet("venus");
+				break;
+			case "4":
+				this.focusOnPlanet("earth");
+				break;
+			case "5":
+				this.focusOnPlanet("mars");
+				break;
+			case "6":
+				this.focusOnPlanet("jupiter");
+				break;
+			case "7":
+				this.focusOnPlanet("saturn");
+				break;
+			case "8":
+				this.focusOnPlanet("uranus");
+				break;
+			case "9":
+				this.focusOnPlanet("neptune");
+				break;
+		}
+	}
+
+	updateUI() {
+		// Update animation status
+		const animationStatus = document.getElementById("animation-status");
+		if (animationStatus) {
+			animationStatus.textContent = this.isPaused
+				? "Animation: OFF"
+				: "Animation: ON";
+		}
+
+		// Update camera info
+		const cameraInfo = document.getElementById("camera-info");
+		if (cameraInfo) {
+			const planetName = this.focusedPlanet
+				? this.focusedPlanet.charAt(0).toUpperCase() +
+				  this.focusedPlanet.slice(1)
+				: "Free";
+			cameraInfo.textContent = `Camera: ${planetName}`;
+		}
+	}
+
+	// Method to be called from animation loop
+	updateAnimation() {
+		if (this.isPaused) return;
+
+		const speed = this.animationSpeed;
+
+		// Update planet rotations with speed multiplier
+		sun.rotateY(0.004 * speed);
+		mercury.planet.rotateY(0.004 * speed);
+		venus.planet.rotateY(0.002 * speed);
+		earth.planet.rotateY(0.02 * speed);
+		mars.planet.rotateY(0.018 * speed);
+		jupiter.planet.rotateY(0.04 * speed);
+		saturn.planet.rotateY(0.038 * speed);
+		uranus.planet.rotateY(0.03 * speed);
+		neptune.planet.rotateY(0.032 * speed);
+		pluto.planet.rotateY(0.008 * speed);
+
+		// Update orbital rotations with speed multiplier
+		mercury.planetOrbit.rotateY(0.04 * speed);
+		venus.planetOrbit.rotateY(0.015 * speed);
+		earth.planetOrbit.rotateY(0.01 * speed);
+		mars.planetOrbit.rotateY(0.008 * speed);
+		jupiter.planetOrbit.rotateY(0.002 * speed);
+		saturn.planetOrbit.rotateY(0.0009 * speed);
+		uranus.planetOrbit.rotateY(0.0004 * speed);
+		neptune.planetOrbit.rotateY(0.0001 * speed);
+		pluto.planetOrbit.rotateY(0.00007 * speed);
 	}
 }
 
-// Initialize EONET overlay after Earth is created
-const eonetOverlay = new EONETDataOverlay(earth);
-
-// EONET Controls Event Listeners
-function initializeEONETControls() {
-	const filterButtons = document.querySelectorAll(".filter-btn");
-	const eventCounter = document.getElementById("event-counter");
-
-	// Filter button event listeners
-	filterButtons.forEach((button) => {
-		button.addEventListener("click", () => {
-			// Remove active class from all buttons
-			filterButtons.forEach((btn) => btn.classList.remove("active"));
-			// Add active class to clicked button
-			button.classList.add("active");
-
-			// Extract filter type from button id
-			const filterType = button.id.replace("filter-", "");
-
-			// Apply filter
-			eonetOverlay.filterEventsByType(filterType);
-
-			// Update counter
-			updateEventCounter(filterType);
-		});
-	});
-
-	// Update event counter
-	function updateEventCounter(filterType = "all") {
-		if (!eonetOverlay.markers) {
-			eventCounter.textContent = "Loading events...";
-			return;
-		}
-
-		let visibleCount = 0;
-		if (filterType === "all") {
-			visibleCount = eonetOverlay.markers.length;
-		} else {
-			visibleCount = eonetOverlay.markers.filter(
-				(marker) => marker.userData.eventType === filterType
-			).length;
-		}
-
-		eventCounter.textContent = `Showing ${visibleCount} events`;
-	}
-
-	// Update counter when data loads
-	const checkDataLoaded = () => {
-		if (eonetOverlay.markers && eonetOverlay.markers.length > 0) {
-			updateEventCounter();
-		} else {
-			setTimeout(checkDataLoaded, 1000);
-		}
-	};
-	checkDataLoaded();
-}
-
-// Initialize controls when DOM is loaded
-document.addEventListener("DOMContentLoaded", initializeEONETControls);
+// Initialize navigation controller
+const navigationController = new NavigationController();
 
 function animate() {
-	//Self-rotation
-	sun.rotateY(0.004);
-	mercury.planet.rotateY(0.004);
-	venus.planet.rotateY(0.002);
-	earth.planet.rotateY(0.02);
-	mars.planet.rotateY(0.018);
-	jupiter.planet.rotateY(0.04);
-	saturn.planet.rotateY(0.038);
-	uranus.planet.rotateY(0.03);
-	neptune.planet.rotateY(0.032);
-	pluto.planet.rotateY(0.008);
+	// Use navigation controller for all animations
+	navigationController.updateAnimation();
 
-	//Around-sun-rotation
-	mercury.planetOrbit.rotateY(0.04);
-	venus.planetOrbit.rotateY(0.015);
-	earth.planetOrbit.rotateY(0.01);
-	mars.planetOrbit.rotateY(0.008);
-	jupiter.planetOrbit.rotateY(0.002);
-	saturn.planetOrbit.rotateY(0.0009);
-	uranus.planetOrbit.rotateY(0.0004);
-	neptune.planetOrbit.rotateY(0.0001);
-	pluto.planetOrbit.rotateY(0.00007);
-
-	// Animate EONET data markers
-	if (eonetOverlay) {
-		eonetOverlay.animate();
-	}
-
+	// Render the scene
 	renderer.render(scene, camera);
 }
 
