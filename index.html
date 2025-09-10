@@ -33,65 +33,66 @@
 			<div id="info-panel" class="nav-panel info-panel hidden">
 				<div class="panel-header">
 					<h3>🌌 Solar System Info</h3>
-					<button
-						class="close-btn"
-						onclick="togglePanel('info-panel')"
-					>
-						&times;
-					</button>
+					<button class="close-btn">&times;</button>
 				</div>
-				<div class="panel-content scrollable-content">
-					<p>
-						Explore our solar system with accurate planetary data
-						from NASA/JPL. Use the controls to navigate and learn
-						about each planet.
-					</p>
-					<div class="info-section">
-						<h4>Available Views:</h4>
-						<ul>
-							<li>
-								<strong>Solar System View</strong> - Explore
-								planets and their orbits
-							</li>
-							<li>
-								<a
-									href="earth-view.html"
-									style="
-										color: #4caf50;
-										text-decoration: none;
-									"
-									>🌍 Earth View</a
-								>
-								- Real-time NASA EONET events and natural
-								disasters
-							</li>
-						</ul>
-					</div>
-					<div class="info-section">
-						<h4>Navigation Tips:</h4>
-						<ul>
-							<li>Click and drag to rotate the view</li>
-							<li>Scroll to zoom in/out</li>
-							<li>Use keyboard shortcuts for quick navigation</li>
-							<li>
-								Click planet buttons to focus on specific
-								planets
-							</li>
-						</ul>
-					</div>
-					<div class="info-section">
-						<h4>Keyboard Shortcuts:</h4>
-						<ul>
-							<li><kbd>Space</kbd> - Pause/Resume animation</li>
-							<li><kbd>R</kbd> - Reset camera</li>
-							<li><kbd>F</kbd> - Toggle fullscreen</li>
-							<li><kbd>I</kbd> - Toggle info panel</li>
-							<li><kbd>C</kbd> - Toggle controls panel</li>
-							<li>
-								<kbd>1-9</kbd> - Focus on planets (Sun to
-								Neptune)
-							</li>
-						</ul>
+				<div class="panel-content">
+					<div class="scrollable-content">
+						<p>
+							Explore our solar system with accurate planetary
+							data from NASA/JPL. Use the controls to navigate and
+							learn about each planet.
+						</p>
+						<div class="info-section">
+							<h4>Available Views:</h4>
+							<ul>
+								<li>
+									<strong>Solar System View</strong> - Explore
+									planets and their orbits
+								</li>
+								<li>
+									<a
+										href="earth-view.html"
+										style="
+											color: #4caf50;
+											text-decoration: none;
+										"
+										>🌍 Earth View</a
+									>
+									- Real-time NASA EONET events and natural
+									disasters
+								</li>
+							</ul>
+						</div>
+						<div class="info-section">
+							<h4>Navigation Tips:</h4>
+							<ul>
+								<li>Click and drag to rotate the view</li>
+								<li>Scroll to zoom in/out</li>
+								<li>
+									Use keyboard shortcuts for quick navigation
+								</li>
+								<li>
+									Click planet buttons to focus on specific
+									planets
+								</li>
+							</ul>
+						</div>
+						<div class="info-section">
+							<h4>Keyboard Shortcuts:</h4>
+							<ul>
+								<li>
+									<kbd>Space</kbd> - Pause/Resume animation
+								</li>
+								<li><kbd>R</kbd> - Reset camera</li>
+								<li><kbd>F</kbd> - Toggle fullscreen</li>
+								<li><kbd>I</kbd> - Toggle info panel</li>
+								<li><kbd>C</kbd> - Toggle controls panel</li>
+								<li>
+									<kbd>1-9</kbd> - Focus on planets (Sun to
+									Neptune)
+								</li>
+							</ul>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -100,45 +101,45 @@
 			<div
 				id="controls-panel"
 				class="nav-panel controls-panel left-control-panel hidden"
+				style="position: fixed; left: 20px; top: 60px"
 			>
 				<div class="panel-header">
 					<h3>🎛️ Controls</h3>
-					<button
-						class="close-btn"
-						onclick="togglePanel('controls-panel')"
-					>
-						&times;
-					</button>
+					<button class="close-btn">&times;</button>
 				</div>
 				<div class="panel-content">
-					<div class="control-group">
-						<label for="animation-speed">Animation Speed:</label>
-						<input
-							type="range"
-							id="animation-speed"
-							min="0"
-							max="5"
-							step="0.1"
-							value="1"
-						/>
-						<span id="speed-value">1.0x</span>
-					</div>
-					<div class="control-group">
-						<label for="pause-animation">
-							<input type="checkbox" id="pause-animation" />
-							Pause Animation
-						</label>
-					</div>
-					<div class="control-group">
-						<button id="reset-camera" class="control-btn">
-							Reset Camera
-						</button>
-						<button id="solar-overview" class="control-btn">
-							Solar System Overview
-						</button>
-						<button id="toggle-fullscreen" class="control-btn">
-							Toggle Fullscreen
-						</button>
+					<div class="scrollable-content">
+						<div class="control-group">
+							<label for="animation-speed"
+								>Animation Speed:</label
+							>
+							<input
+								type="range"
+								id="animation-speed"
+								min="0"
+								max="5"
+								step="0.1"
+								value="1"
+							/>
+							<span id="speed-value">1.0x</span>
+						</div>
+						<div class="control-group">
+							<label for="pause-animation">
+								<input type="checkbox" id="pause-animation" />
+								Pause Animation
+							</label>
+						</div>
+						<div class="control-group">
+							<button id="reset-camera" class="control-btn">
+								Reset Camera
+							</button>
+							<button id="solar-overview" class="control-btn">
+								Solar System Overview
+							</button>
+							<button id="toggle-fullscreen" class="control-btn">
+								Toggle Fullscreen
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -149,20 +150,8 @@
 			<span id="animation-status">Animation: ON</span>
 			<span id="camera-info">Camera: Free</span>
 			<div class="mini-controls">
-				<button
-					id="info-btn"
-					class="mini-btn"
-					onclick="togglePanel('info-panel')"
-				>
-					ℹ️
-				</button>
-				<button
-					id="controls-btn"
-					class="mini-btn"
-					onclick="togglePanel('controls-panel')"
-				>
-					🎛️
-				</button>
+				<button id="info-btn" class="mini-btn">ℹ️</button>
+				<button id="controls-btn" class="mini-btn">🎛️</button>
 				<a href="earth-view.html" class="mini-btn" title="Earth View"
 					>🌍</a
 				>
@@ -170,6 +159,5 @@
 		</div>
 
 		<script type="module" src="main.js"></script>
-		<script src="panel-controller.js"></script>
 	</body>
 </html>

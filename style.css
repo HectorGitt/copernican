@@ -149,6 +149,12 @@ html {
 	flex-direction: column;
 	gap: 15px;
 	z-index: 1500;
+	pointer-events: none; /* Allow clicks to pass through the container */
+}
+
+/* Make all child elements receive pointer events */
+.nav-menu > * {
+	pointer-events: auto;
 }
 
 /* Navigation Panels */
@@ -214,8 +220,8 @@ html {
 
 .panel-content {
 	padding: 20px;
-	max-height: calc(100% - 80px);
-	overflow-y: auto;
+	height: auto;
+	overflow: hidden; /* The scrollable-content div inside will have the scrolling */
 }
 
 /* Planet Navigation */
@@ -258,6 +264,21 @@ html {
 /* Info Panel */
 .info-section {
 	margin-bottom: 20px;
+	padding-bottom: 15px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-section:last-child {
+	margin-bottom: 0;
+	padding-bottom: 0;
+	border-bottom: none;
+}
+
+.info-section h4 {
+	margin: 0 0 10px 0;
+	color: #00d4ff;
+	font-weight: 600;
+	font-size: 16px;
 }
 
 .info-section h4 {
@@ -464,6 +485,32 @@ html {
 }
 
 .nav-panel::-webkit-scrollbar-thumb:hover {
+	background: rgba(0, 212, 255, 0.8);
+}
+
+/* Scrollable Content Styles */
+.scrollable-content {
+	max-height: calc(100vh - 200px);
+	overflow-y: auto;
+	padding-right: 5px; /* Give a little space for the scrollbar */
+}
+
+.scrollable-content::-webkit-scrollbar {
+	width: 6px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+	background: rgba(255, 255, 255, 0.05);
+	border-radius: 3px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+	background: rgba(0, 212, 255, 0.6);
+	border-radius: 3px;
+	transition: background 0.3s ease;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
 	background: rgba(0, 212, 255, 0.8);
 }
 

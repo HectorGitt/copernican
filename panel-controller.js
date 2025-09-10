@@ -25,35 +25,21 @@ document.addEventListener("DOMContentLoaded", function () {
 			}
 		});
 	});
-
-	// Set up toggle buttons in mini-info-bar
-	const infoBtn = document.getElementById("info-btn");
-	if (infoBtn) {
-		infoBtn.addEventListener("click", function () {
-			togglePanel("info-panel");
-		});
-	}
-
-	const controlsBtn = document.getElementById("controls-btn");
-	if (controlsBtn) {
-		controlsBtn.addEventListener("click", function () {
-			togglePanel("controls-panel");
-		});
-	}
-
-	// Helper function to toggle panel visibility
-	window.togglePanel = function (panelId) {
-		const panel = document.getElementById(panelId);
-		if (!panel) return;
-
-		// Hide all other panels first
-		panels.forEach((p) => {
-			if (p.id !== panelId) {
-				p.classList.add("hidden");
-			}
-		});
-
-		// Toggle the target panel
-		panel.classList.toggle("hidden");
-	};
 });
+
+// Helper function to toggle panel visibility
+window.togglePanel = function (panelId) {
+	const panels = document.querySelectorAll(".nav-panel");
+	const panel = document.getElementById(panelId);
+	if (!panel) return;
+
+	// Hide all other panels first
+	panels.forEach((p) => {
+		if (p.id !== panelId) {
+			p.classList.add("hidden");
+		}
+	});
+
+	// Toggle the target panel
+	panel.classList.toggle("hidden");
+};

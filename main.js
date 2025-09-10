@@ -1,6 +1,7 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import "./panel-controller.js";
 
 import starsTexture from "./src/img/stars.jpg";
 import sunTexture from "./src/img/sun.jpg";
@@ -256,14 +257,8 @@ class NavigationController {
 	}
 
 	togglePanel(panelId) {
-		const panel = document.getElementById(panelId);
-		const isHidden = panel.classList.contains("hidden");
-
-		this.hideAllPanels();
-
-		if (isHidden) {
-			this.showPanel(panelId);
-		}
+		// Use the global togglePanel function
+		window.togglePanel(panelId);
 	}
 
 	showPanel(panelId) {
