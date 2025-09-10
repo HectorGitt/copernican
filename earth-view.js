@@ -1547,6 +1547,52 @@ document.addEventListener("DOMContentLoaded", () => {
 		earthEONET.hideEventDetails();
 	});
 
+	// Controls panel toggle
+	document.getElementById("close-controls").addEventListener("click", () => {
+		toggleControlsPanel();
+	});
+
+	// Function to toggle the controls panel visibility
+	function toggleControlsPanel() {
+		const controlsPanel = document.getElementById("earth-eonet-controls");
+		if (controlsPanel) {
+			controlsPanel.classList.toggle("hidden");
+		}
+	}
+
+	// Add button to nav bar to show controls when hidden
+	const earthNav = document.getElementById("earth-nav");
+	const showControlsBtn = document.createElement("button");
+	showControlsBtn.id = "show-controls-btn";
+	showControlsBtn.className = "nav-btn";
+	showControlsBtn.textContent = "🎮 Controls";
+	showControlsBtn.style.display = "none";
+	showControlsBtn.addEventListener("click", toggleControlsPanel);
+	earthNav.appendChild(showControlsBtn);
+
+	// Monitor controls visibility to show/hide the button
+	const controlsObserver = new MutationObserver((mutations) => {
+		mutations.forEach((mutation) => {
+			if (
+				mutation.type === "attributes" &&
+				mutation.attributeName === "class"
+			) {
+				const controlsPanel = document.getElementById(
+					"earth-eonet-controls"
+				);
+				const showBtn = document.getElementById("show-controls-btn");
+				if (controlsPanel.classList.contains("hidden")) {
+					showBtn.style.display = "block";
+				} else {
+					showBtn.style.display = "none";
+				}
+			}
+		});
+	});
+
+	const controlsPanel = document.getElementById("earth-eonet-controls");
+	controlsObserver.observe(controlsPanel, { attributes: true });
+
 	// Sunlight control event listeners
 	const realTimeCheckbox = document.getElementById("real-time");
 	const manualTimeSlider = document.getElementById("manual-time");
