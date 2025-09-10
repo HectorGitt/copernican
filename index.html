@@ -4,56 +4,172 @@
 		<meta charset="UTF-8" />
 		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Copernican Solar System - NASA EONET Data</title>
+		<title>Copernican Solar System</title>
+		<link rel="stylesheet" href="style.css" />
+		<link rel="stylesheet" href="earth-controls.css" />
 	</head>
 	<body>
 		<div id="app"></div>
 
+		<!-- Navigation Menu Toggle (Mobile) -->
 		<!-- Navigation -->
 		<nav id="main-nav">
 			<h1>🌌 Copernican Solar System</h1>
 			<a href="earth-view.html" class="nav-btn">🌍 Earth View</a>
 		</nav>
+		<button
+			id="nav-toggle"
+			class="nav-toggle"
+			aria-label="Toggle navigation menu"
+		>
+			<span class="hamburger-line"></span>
+			<span class="hamburger-line"></span>
+			<span class="hamburger-line"></span>
+		</button>
 
-		<!-- EONET Data Controls -->
-		<div id="eonet-controls">
-			<h3>NASA EONET Events</h3>
-			<div class="filter-buttons">
-				<button id="filter-all" class="filter-btn active">
-					All Events
-				</button>
-				<button id="filter-wildfires" class="filter-btn">
-					🔥 Wildfires
-				</button>
-				<button id="filter-volcanoes" class="filter-btn">
-					🌋 Volcanoes
-				</button>
-				<button id="filter-earthquakes" class="filter-btn">
-					🌍 Earthquakes
-				</button>
-				<button id="filter-storms" class="filter-btn">🌪️ Storms</button>
-				<button id="filter-floods" class="filter-btn">🌊 Floods</button>
+		<!-- Navigation Menu -->
+		<div class="nav-menu">
+			<!-- Info Panel -->
+			<div id="info-panel" class="nav-panel info-panel hidden">
+				<div class="panel-header">
+					<h3>🌌 Solar System Info</h3>
+					<button
+						class="close-btn"
+						onclick="togglePanel('info-panel')"
+					>
+						&times;
+					</button>
+				</div>
+				<div class="panel-content scrollable-content">
+					<p>
+						Explore our solar system with accurate planetary data
+						from NASA/JPL. Use the controls to navigate and learn
+						about each planet.
+					</p>
+					<div class="info-section">
+						<h4>Available Views:</h4>
+						<ul>
+							<li>
+								<strong>Solar System View</strong> - Explore
+								planets and their orbits
+							</li>
+							<li>
+								<a
+									href="earth-view.html"
+									style="
+										color: #4caf50;
+										text-decoration: none;
+									"
+									>🌍 Earth View</a
+								>
+								- Real-time NASA EONET events and natural
+								disasters
+							</li>
+						</ul>
+					</div>
+					<div class="info-section">
+						<h4>Navigation Tips:</h4>
+						<ul>
+							<li>Click and drag to rotate the view</li>
+							<li>Scroll to zoom in/out</li>
+							<li>Use keyboard shortcuts for quick navigation</li>
+							<li>
+								Click planet buttons to focus on specific
+								planets
+							</li>
+						</ul>
+					</div>
+					<div class="info-section">
+						<h4>Keyboard Shortcuts:</h4>
+						<ul>
+							<li><kbd>Space</kbd> - Pause/Resume animation</li>
+							<li><kbd>R</kbd> - Reset camera</li>
+							<li><kbd>F</kbd> - Toggle fullscreen</li>
+							<li><kbd>I</kbd> - Toggle info panel</li>
+							<li><kbd>C</kbd> - Toggle controls panel</li>
+							<li>
+								<kbd>1-9</kbd> - Focus on planets (Sun to
+								Neptune)
+							</li>
+						</ul>
+					</div>
+				</div>
 			</div>
-			<div id="event-counter">Loading events...</div>
-			<div class="legend">
-				<div class="legend-item">
-					<span class="marker wildfire"></span>Wildfire
+
+			<!-- Controls Panel -->
+			<div
+				id="controls-panel"
+				class="nav-panel controls-panel left-control-panel hidden"
+			>
+				<div class="panel-header">
+					<h3>🎛️ Controls</h3>
+					<button
+						class="close-btn"
+						onclick="togglePanel('controls-panel')"
+					>
+						&times;
+					</button>
 				</div>
-				<div class="legend-item">
-					<span class="marker volcano"></span>Volcano
-				</div>
-				<div class="legend-item">
-					<span class="marker earthquake"></span>Earthquake
-				</div>
-				<div class="legend-item">
-					<span class="marker storm"></span>Storm
-				</div>
-				<div class="legend-item">
-					<span class="marker flood"></span>Flood
+				<div class="panel-content">
+					<div class="control-group">
+						<label for="animation-speed">Animation Speed:</label>
+						<input
+							type="range"
+							id="animation-speed"
+							min="0"
+							max="5"
+							step="0.1"
+							value="1"
+						/>
+						<span id="speed-value">1.0x</span>
+					</div>
+					<div class="control-group">
+						<label for="pause-animation">
+							<input type="checkbox" id="pause-animation" />
+							Pause Animation
+						</label>
+					</div>
+					<div class="control-group">
+						<button id="reset-camera" class="control-btn">
+							Reset Camera
+						</button>
+						<button id="solar-overview" class="control-btn">
+							Solar System Overview
+						</button>
+						<button id="toggle-fullscreen" class="control-btn">
+							Toggle Fullscreen
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>
 
+		<!-- Mini Info Bar -->
+		<div class="mini-info-bar">
+			<span id="animation-status">Animation: ON</span>
+			<span id="camera-info">Camera: Free</span>
+			<div class="mini-controls">
+				<button
+					id="info-btn"
+					class="mini-btn"
+					onclick="togglePanel('info-panel')"
+				>
+					ℹ️
+				</button>
+				<button
+					id="controls-btn"
+					class="mini-btn"
+					onclick="togglePanel('controls-panel')"
+				>
+					🎛️
+				</button>
+				<a href="earth-view.html" class="mini-btn" title="Earth View"
+					>🌍</a
+				>
+			</div>
+		</div>
+
 		<script type="module" src="main.js"></script>
+		<script src="panel-controller.js"></script>
 	</body>
 </html>
