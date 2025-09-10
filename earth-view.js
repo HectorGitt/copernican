@@ -2,6 +2,7 @@ import "./earth-view.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import earthTexture from "./src/img/earth.jpg";
+import starsTexture from "./src/img/stars.jpg";
 
 // Scene Setup
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -591,13 +592,13 @@ const sunlightSim = new SunlightSimulator();
 
 // Star Field Background with image texture
 function createStarField() {
-	// Load stars texture from image
-	const starsTexture = textureLoader.load("./src/img/stars.jpg");
+	// Use the imported stars texture
+	const starsTextureMap = textureLoader.load(starsTexture);
 
 	// Create a large sphere with inside faces
 	const starsGeometry = new THREE.SphereGeometry(900, 64, 64);
 	const starsMaterial = new THREE.MeshBasicMaterial({
-		map: starsTexture,
+		map: starsTextureMap,
 		side: THREE.BackSide, // Show inside of sphere
 	});
 

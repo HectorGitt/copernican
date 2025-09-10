@@ -16,8 +16,7 @@ html {
 	top: 0;
 	left: 0;
 	right: 0;
-	background: rgba(0, 0, 0, 0.9);
-	backdrop-filter: blur(15px);
+	background: rgba(0, 0, 0, 0.05);
 	padding: 15px 20px;
 	display: flex;
 	justify-content: space-between;
@@ -54,7 +53,7 @@ html {
 /* Enhanced EONET Controls */
 #earth-eonet-controls {
 	position: fixed;
-	top: 80px;
+	top: 60px;
 	left: 20px;
 	background: rgba(0, 0, 0, 0.85);
 	backdrop-filter: blur(15px);
@@ -62,7 +61,7 @@ html {
 	border-radius: 15px;
 	padding: 20px;
 	max-width: 320px;
-	max-height: calc(100vh - 100px);
+	max-height: calc(100vh - 80px);
 	overflow-y: auto;
 	z-index: 1000;
 }
@@ -765,7 +764,7 @@ html {
 	}
 
 	#earth-eonet-controls {
-		top: 60px;
+		top: 50px;
 		left: 10px;
 		max-width: 280px;
 		padding: 15px;
