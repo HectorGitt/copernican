@@ -54,8 +54,6 @@ class SunlightSimulator {
 		const sunGeometry = new THREE.SphereGeometry(2, 32, 32);
 		const sunMaterial = new THREE.MeshBasicMaterial({
 			color: 0xffffff,
-			emissive: 0xffffaa,
-			emissiveIntensity: 1,
 		});
 
 		this.sun = new THREE.Mesh(sunGeometry, sunMaterial);
@@ -94,13 +92,16 @@ class SunlightSimulator {
 		scene.add(this.sunLight.target);
 
 		// Ambient light for space illumination
-		this.spaceAmbient = new THREE.AmbientLight(0x111122, 0.1);
+		this.spaceAmbient = new THREE.AmbientLight(0xffffff, 0.1);
 		scene.add(this.spaceAmbient);
 
-		// Earth's atmospheric scattering simulation
-		this.atmosphereLight = new THREE.DirectionalLight(0x4488ff, 0.3);
-		this.atmosphereLight.position.set(-30, 0, 0); // Opposite side for scattered light
+		// Earth's atmospheric scattering simulation - moved farther away and reduced intensity
+		this.atmosphereLight = new THREE.DirectionalLight(0xffffff, 0.1); // Changed to white light
+		this.atmosphereLight.position.set(-150, 0, 0); // Moved much farther away (from -30 to -150)
+		this.atmosphereLight.target.position.set(0, 0, 0); // Always points to Earth center
+		this.atmosphereLight.castShadow = false; // Disable shadows for atmosphere light
 		scene.add(this.atmosphereLight);
+		scene.add(this.atmosphereLight.target);
 	}
 
 	setupAtmosphere() {
@@ -110,7 +111,7 @@ class SunlightSimulator {
 			uniforms: {
 				c: { value: 0.8 },
 				p: { value: 6.0 },
-				glowColor: { value: new THREE.Color(0x00aaff) },
+				glowColor: { value: new THREE.Color(0xffffff) }, // Changed to white glow
 				viewVector: { value: camera.position },
 			},
 			vertexShader: `
@@ -233,24 +234,11 @@ class SunlightSimulator {
 	}
 
 	updateLightingIntensity(timeInHours) {
-		// Calculate lighting intensity based on time
-		// Peak intensity at noon (12), minimum at midnight (0/24)
-		const timePhase = Math.abs(timeInHours - 12) / 12; // 0 at noon, 1 at midnight
-
-		// Sun light intensity (stronger during day)
-		const sunIntensity = Math.max(0.1, 1.5 - timePhase * 1.4);
-		this.sunLight.intensity = sunIntensity;
-
-		// Sun color temperature (warmer at sunrise/sunset)
-		const colorTemp = 1 - Math.pow(timePhase, 2) * 0.3;
-		this.sunLight.color.setRGB(1, colorTemp, colorTemp * 0.8);
-
-		// Atmosphere glow intensity
-		const atmosphereIntensity = Math.max(0.1, 0.5 - timePhase * 0.4);
-		this.atmosphere.material.uniforms.c.value = 0.6 + timePhase * 0.4;
-
-		// Update sun glow
-		this.sunGlow.material.opacity = 0.2 + (1 - timePhase) * 0.3;
+		// Keep sunlight and atmosphere constant; only Earth's rotation determines day/night
+		this.sunLight.intensity = 1.5;
+		this.sunLight.color.setRGB(1, 1, 0.8); // Slightly warm white
+		this.atmosphere.material.uniforms.c.value = 0.8;
+		this.sunGlow.material.opacity = 0.35;
 	}
 
 	setTimeSpeed(speed) {
@@ -264,6 +252,19 @@ class SunlightSimulator {
 
 	enableRealTime() {
 		this.isRealTime = true;
+		// Always sync to system time when enabling real-time
+		const now = new Date();
+		if (this.useLocalTime) {
+			this.manualTime =
+				now.getHours() +
+				now.getMinutes() / 60 +
+				now.getSeconds() / 3600;
+		} else {
+			this.manualTime =
+				now.getUTCHours() +
+				now.getUTCMinutes() / 60 +
+				now.getUTCSeconds() / 3600;
+		}
 	}
 
 	pauseTime() {
@@ -415,8 +416,6 @@ class UserTimezoneMarker {
 			color: 0x00ff00, // Bright green for user location
 			transparent: true,
 			opacity: 0.9,
-			emissive: 0x004400,
-			emissiveIntensity: 0.45,
 		});
 
 		const marker = new THREE.Mesh(markerGeometry, markerMaterial);
@@ -563,40 +562,10 @@ class UserTimezoneMarker {
 		// Beam opacity animation
 		userData.beam.material.opacity = 0.1 + 0.2 * Math.sin(time * 1.5);
 
-		// Marker glow animation
-		userData.marker.material.emissiveIntensity =
-			0.3 + 0.4 * Math.sin(time * 3);
-
 		// Keep ring facing camera
 		userData.ring.lookAt(camera.position);
 	}
 }
-
-// Star Field Background
-function createStarField() {
-	const starsGeometry = new THREE.BufferGeometry();
-	const starsMaterial = new THREE.PointsMaterial({
-		color: 0xffffff,
-		size: 2,
-		sizeAttenuation: false,
-	});
-
-	const starsVertices = [];
-	for (let i = 0; i < 6000; i++) {
-		const x = (Math.random() - 0.5) * 2000;
-		const y = (Math.random() - 0.5) * 2000;
-		const z = (Math.random() - 0.5) * 2000;
-		starsVertices.push(x, y, z);
-	}
-
-	starsGeometry.setAttribute(
-		"position",
-		new THREE.Float32BufferAttribute(starsVertices, 3)
-	);
-	const stars = new THREE.Points(starsGeometry, starsMaterial);
-	scene.add(stars);
-}
-createStarField();
 
 // Earth Creation
 const textureLoader = new THREE.TextureLoader();
@@ -604,8 +573,8 @@ const earthGeometry = new THREE.SphereGeometry(10, 64, 64);
 const earthMaterial = new THREE.MeshPhongMaterial({
 	map: textureLoader.load(earthTexture),
 	shininess: 100,
-	transparent: true,
-	opacity: 0.95,
+	transparent: false,
+	opacity: 1.0,
 });
 
 const earth = new THREE.Mesh(earthGeometry, earthMaterial);
@@ -620,8 +589,237 @@ scene.add(earthGroup);
 // Initialize sunlight simulator after earthGroup is created
 const sunlightSim = new SunlightSimulator();
 
+// Star Field Background with image texture
+function createStarField() {
+	// Load stars texture from image
+	const starsTexture = textureLoader.load("./src/img/stars.jpg");
+
+	// Create a large sphere with inside faces
+	const starsGeometry = new THREE.SphereGeometry(900, 64, 64);
+	const starsMaterial = new THREE.MeshBasicMaterial({
+		map: starsTexture,
+		side: THREE.BackSide, // Show inside of sphere
+	});
+
+	// Create mesh and add to scene
+	const stars = new THREE.Mesh(starsGeometry, starsMaterial);
+	scene.add(stars);
+
+	// Also add some particle stars for additional depth
+	const starsPointsGeometry = new THREE.BufferGeometry();
+	const starsPointsMaterial = new THREE.PointsMaterial({
+		color: 0xffffff,
+		size: 1.5,
+		sizeAttenuation: false,
+	});
+
+	const starsVertices = [];
+	for (let i = 0; i < 3000; i++) {
+		const x = (Math.random() - 0.5) * 2000;
+		const y = (Math.random() - 0.5) * 2000;
+		const z = (Math.random() - 0.5) * 2000;
+		starsVertices.push(x, y, z);
+	}
+
+	starsPointsGeometry.setAttribute(
+		"position",
+		new THREE.Float32BufferAttribute(starsVertices, 3)
+	);
+	const starsPoints = new THREE.Points(
+		starsPointsGeometry,
+		starsPointsMaterial
+	);
+	scene.add(starsPoints);
+}
+
 // Initialize user timezone marker
 const userLocationMarker = new UserTimezoneMarker();
+
+// Create the star field after everything else is initialized
+createStarField();
+
+// EONET Categories Data
+const eonetCategories = {
+	title: "EONET Event Categories",
+	description:
+		"List of all the available event categories in the EONET system",
+	categories: [
+		{
+			id: 6,
+			title: "Drought",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/6",
+			description:
+				"Long lasting absence of precipitation affecting agriculture and livestock, and the overall availability of food and water.",
+			color: 0x8b4513,
+			size: 0.5,
+			emoji: "🏜️",
+		},
+		{
+			id: 7,
+			title: "Dust and Haze",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/7",
+			description:
+				"Related to dust storms, air pollution and other non-volcanic aerosols. Volcano-related plumes shall be included with the originating eruption event.",
+			color: 0xffd700,
+			size: 0.6,
+			emoji: "🌫️",
+		},
+		{
+			id: 16,
+			title: "Earthquakes",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/16",
+			description:
+				"Related to all manner of shaking and displacement. Certain aftermath of earthquakes may also be found under landslides and floods.",
+			color: 0x8b4513,
+			size: 0.6,
+			emoji: "🌋",
+		},
+		{
+			id: 9,
+			title: "Floods",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/9",
+			description:
+				"Related to aspects of actual flooding--e.g., inundation, water extending beyond river and lake extents.",
+			color: 0x0080ff,
+			size: 0.7,
+			emoji: "🌊",
+		},
+		{
+			id: 14,
+			title: "Landslides",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/14",
+			description:
+				"Related to landslides and variations thereof: mudslides, avalanche.",
+			color: 0x654321,
+			size: 0.6,
+			emoji: "⛰️",
+		},
+		{
+			id: 19,
+			title: "Manmade",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/19",
+			description:
+				"Events that have been human-induced and are extreme in their extent.",
+			color: 0xff69b4,
+			size: 0.5,
+			emoji: "🏭",
+		},
+		{
+			id: 15,
+			title: "Sea and Lake Ice",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/15",
+			description:
+				"Related to all ice that resides on oceans and lakes, including sea and lake ice (permanent and seasonal) and icebergs.",
+			color: 0x87ceeb,
+			size: 0.4,
+			emoji: "❄️",
+		},
+		{
+			id: 10,
+			title: "Severe Storms",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/10",
+			description:
+				"Related to the atmospheric aspect of storms (hurricanes, cyclones, tornadoes, etc.). Results of storms may be included under floods, landslides, etc.",
+			color: 0xffff00,
+			size: 0.8,
+			emoji: "🌪️",
+		},
+		{
+			id: 17,
+			title: "Snow",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/17",
+			description:
+				"Related to snow events, particularly extreme/anomalous snowfall in either timing or extent/depth.",
+			color: 0xffffff,
+			size: 0.4,
+			emoji: "❄️",
+		},
+		{
+			id: 18,
+			title: "Temperature Extremes",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/18",
+			description:
+				"Related to anomalous land temperatures, either heat or cold.",
+			color: 0xff6347,
+			size: 0.5,
+			emoji: "🔥",
+		},
+		{
+			id: 12,
+			title: "Volcanoes",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/12",
+			description:
+				"Related to both the physical effects of an eruption (rock, ash, lava) and the atmospheric (ash and gas plumes).",
+			color: 0xff0000,
+			size: 1.0,
+			emoji: "🌋",
+		},
+		{
+			id: 13,
+			title: "Water Color",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/13",
+			description:
+				"Related to events that alter the appearance of water: phytoplankton, red tide, algae, sediment, whiting, etc.",
+			color: 0x00ffff,
+			size: 0.5,
+			emoji: "🌊",
+		},
+		{
+			id: 8,
+			title: "Wildfires",
+			link: "https://eonet.gsfc.nasa.gov/api/v2.1/categories/8",
+			description:
+				"Wildland fires includes all nature of fire, in forest and plains, as well as those that spread to become urban and industrial fire events. Fires may be naturally caused or manmade.",
+			color: 0xff4500,
+			size: 0.8,
+			emoji: "🔥",
+		},
+	],
+};
+
+// Helper function to get category by ID
+function getCategoryById(categoryId) {
+	return eonetCategories.categories.find(
+		(category) => category.id === categoryId
+	);
+}
+
+// Helper function to get category key from title
+function getCategoryKey(title) {
+	// Convert category title to a key (e.g. "Wildfires" -> "wildfires")
+	const map = {
+		Wildfires: "wildfires",
+		Volcanoes: "volcanoes",
+		Earthquakes: "earthquakes",
+		Floods: "floods",
+		"Severe Storms": "storms",
+		Drought: "droughts",
+		"Dust and Haze": "dustHaze",
+		"Sea and Lake Ice": "seaLakeIce",
+		Snow: "snow",
+		Landslides: "landslides",
+		Manmade: "manmade",
+		"Temperature Extremes": "tempExtremes",
+		"Water Color": "waterColor",
+	};
+
+	return map[title] || title.toLowerCase().replace(/\s+/g, "");
+}
+
+// Create category color map
+const categoryMap = {};
+eonetCategories.categories.forEach((category) => {
+	const key = getCategoryKey(category.title);
+	categoryMap[key] = {
+		id: category.id,
+		title: category.title,
+		color: category.color,
+		size: category.size,
+		description: category.description,
+		link: category.link,
+		emoji: category.emoji || "📍",
+	};
+});
 
 // Enhanced EONET Data Overlay for Earth View
 class EarthViewEONET {
@@ -629,26 +827,110 @@ class EarthViewEONET {
 		this.events = [];
 		this.markers = [];
 		this.labels = [];
-		this.eventTypes = {
-			wildfires: { color: 0xff4500, size: 0.8, glow: 0xff6600 },
-			volcanoes: { color: 0xff0000, size: 1.0, glow: 0xff3300 },
-			earthquakes: { color: 0x8b4513, size: 0.6, glow: 0xaa5522 },
-			floods: { color: 0x0080ff, size: 0.7, glow: 0x3399ff },
-			storms: { color: 0xffff00, size: 0.8, glow: 0xffff66 },
-			droughts: { color: 0x8b4513, size: 0.5, glow: 0x996633 },
-			dustHaze: { color: 0xffd700, size: 0.6, glow: 0xffdd33 },
-			seaLakeIce: { color: 0x87ceeb, size: 0.4, glow: 0x99ddff },
-			snow: { color: 0xffffff, size: 0.4, glow: 0xffffff },
-			landslides: { color: 0x654321, size: 0.6, glow: 0x775533 },
-			manmade: { color: 0xff69b4, size: 0.5, glow: 0xff88cc },
-		};
+		this.categories = eonetCategories.categories;
+		this.eventTypes = this.initEventTypesFromCategories();
 		this.animationSpeed = 1;
 		this.markerSize = 0.5;
 		this.showLabels = true;
 		this.selectedMarker = null;
+		this.eventLimit = 200; // Default limit of events to display
 
 		this.setupEventListeners();
+		this.setupFilterButtons();
+		this.createLegend();
 		this.fetchData();
+	}
+
+	initEventTypesFromCategories() {
+		const eventTypes = {};
+
+		this.categories.forEach((category) => {
+			const key = getCategoryKey(category.title);
+			eventTypes[key] = {
+				id: category.id,
+				title: category.title,
+				color: category.color || 0xcccccc,
+				size: category.size || 0.5,
+				description: category.description,
+				link: category.link,
+				emoji: category.emoji || "📍",
+				glow: this.calculateGlowColor(category.color || 0xcccccc),
+			};
+		});
+
+		return eventTypes;
+	}
+
+	calculateGlowColor(baseColor) {
+		// Calculate a slightly brighter version of the base color for the glow
+		const color = new THREE.Color(baseColor);
+		color.r = Math.min(1, color.r * 1.3);
+		color.g = Math.min(1, color.g * 1.3);
+		color.b = Math.min(1, color.b * 1.3);
+		return color.getHex();
+	}
+
+	setupFilterButtons() {
+		const filterContainer = document.querySelector(".filter-buttons");
+		if (!filterContainer) return;
+
+		// Clear existing buttons
+		filterContainer.innerHTML = "";
+
+		// Add "All Events" button
+		const allButton = document.createElement("button");
+		allButton.id = "filter-all";
+		allButton.className = "filter-btn active";
+		allButton.textContent = "All Events";
+		filterContainer.appendChild(allButton);
+
+		// Add a button for each category
+		this.categories.forEach((category) => {
+			const button = document.createElement("button");
+			const key = getCategoryKey(category.title);
+			button.id = `filter-${key}`;
+			button.className = "filter-btn";
+			button.textContent = category.title;
+
+			// Set button background color to match category
+			const color = new THREE.Color(category.color || 0xcccccc);
+			const r = Math.floor(color.r * 255);
+			const g = Math.floor(color.g * 255);
+			const b = Math.floor(color.b * 255);
+			button.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.7)`;
+
+			// Set text color (white or black) based on background brightness
+			const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+			button.style.color = brightness > 128 ? "#000" : "#fff";
+
+			filterContainer.appendChild(button);
+		});
+	}
+
+	createLegend() {
+		const legendContainer = document.querySelector(".legend");
+		if (!legendContainer) return;
+
+		// Clear existing legend
+		legendContainer.innerHTML = "<h4>🏷️ Event Types</h4>";
+
+		// Add a legend item for each category
+		this.categories.forEach((category) => {
+			const item = document.createElement("div");
+			item.className = "legend-item";
+
+			const color = new THREE.Color(category.color || 0xcccccc);
+			const r = Math.floor(color.r * 255);
+			const g = Math.floor(color.g * 255);
+			const b = Math.floor(color.b * 255);
+
+			item.innerHTML = `
+				<span class="legend-color" style="background-color: rgb(${r}, ${g}, ${b})"></span>
+				<span class="legend-text">${category.title}</span>
+			`;
+
+			legendContainer.appendChild(item);
+		});
 	}
 
 	setupEventListeners() {
@@ -673,6 +955,15 @@ class EarthViewEONET {
 			.addEventListener("change", (e) => {
 				this.showLabels = e.target.checked;
 				this.toggleLabels();
+			});
+
+		// Event limit control
+		document
+			.getElementById("event-limit")
+			.addEventListener("input", (e) => {
+				this.eventLimit = parseInt(e.target.value);
+				document.getElementById("event-limit-value").textContent =
+					this.eventLimit;
 			});
 
 		// Refresh data button
@@ -706,7 +997,12 @@ class EarthViewEONET {
 			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
 			raycaster.setFromCamera(mouse, camera);
-			const intersects = raycaster.intersectObjects(this.markers, true); // Enable recursive intersection
+
+			// Only get visible markers for intersection testing
+			const visibleMarkers = this.markers.filter(
+				(marker) => marker.visible
+			);
+			const intersects = raycaster.intersectObjects(visibleMarkers, true); // Enable recursive intersection
 
 			if (intersects.length > 0) {
 				// Find the parent marker group
@@ -736,7 +1032,7 @@ class EarthViewEONET {
 
 			try {
 				response = await fetch(
-					"https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=200"
+					`https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=${this.eventLimit}`
 				);
 				if (!response.ok)
 					throw new Error(`HTTP error! status: ${response.status}`);
@@ -763,7 +1059,7 @@ class EarthViewEONET {
 	}
 
 	createEnhancedSampleData() {
-		this.events = [
+		const sampleEvents = [
 			// Wildfires
 			{
 				title: "California Wildfire Complex",
@@ -883,8 +1179,11 @@ class EarthViewEONET {
 			},
 		];
 
+		// Limit the sample events according to eventLimit
+		this.events = sampleEvents.slice(0, this.eventLimit);
+
 		console.log(
-			`Using enhanced sample data with ${this.events.length} events`
+			`Using enhanced sample data with ${this.events.length} events (limited to ${this.eventLimit})`
 		);
 	}
 
@@ -903,6 +1202,18 @@ class EarthViewEONET {
 	getEventType(categories) {
 		if (!categories || categories.length === 0) return "manmade";
 
+		// First try to match by category ID
+		if (categories[0].id) {
+			const categoryId = categories[0].id;
+			const foundCategory = this.categories.find(
+				(cat) => cat.id === categoryId
+			);
+			if (foundCategory) {
+				return getCategoryKey(foundCategory.title);
+			}
+		}
+
+		// Fall back to matching by title
 		const category = categories[0].title.toLowerCase();
 		if (category.includes("wildfire")) return "wildfires";
 		if (category.includes("volcano")) return "volcanoes";
@@ -920,6 +1231,9 @@ class EarthViewEONET {
 		if (category.includes("ice")) return "seaLakeIce";
 		if (category.includes("snow")) return "snow";
 		if (category.includes("landslide")) return "landslides";
+		if (category.includes("temperature")) return "tempExtremes";
+		if (category.includes("water") && category.includes("color"))
+			return "waterColor";
 
 		return "manmade";
 	}
@@ -958,8 +1272,7 @@ class EarthViewEONET {
 				color: properties.color,
 				transparent: true,
 				opacity: 0.9,
-				emissive: properties.color,
-				emissiveIntensity: 0.3,
+				shininess: 100,
 			});
 
 			const marker = new THREE.Mesh(markerGeometry, markerMaterial);
@@ -993,14 +1306,17 @@ class EarthViewEONET {
 				eventType: eventType,
 				glowMesh: glow,
 				mainMesh: marker,
+				categoryInfo: properties,
 			};
 
 			earthGroup.add(markerGroup);
 			this.markers.push(markerGroup);
 
-			// Create label if enabled
+			// Labels have been removed as requested
+			// We'll still create an empty entry to maintain array parity
 			if (this.showLabels) {
-				this.createLabel(event.title, position, eventType);
+				// Instead of creating a visible label, we just add a null placeholder to the labels array
+				this.labels.push(null);
 			}
 		});
 
@@ -1009,36 +1325,12 @@ class EarthViewEONET {
 	}
 
 	createLabel(text, position, eventType) {
-		const canvas = document.createElement("canvas");
-		const context = canvas.getContext("2d");
-		canvas.width = 256;
-		canvas.height = 64;
+		// Text banners have been removed as requested
+		// This function is kept as a stub to maintain compatibility
+		// but doesn't create any visible elements
 
-		context.fillStyle = "rgba(0, 0, 0, 0.7)";
-		context.fillRect(0, 0, canvas.width, canvas.height);
-
-		context.fillStyle = "#ffffff";
-		context.font = "14px Arial";
-		context.textAlign = "center";
-		context.fillText(
-			text.substring(0, 25),
-			canvas.width / 2,
-			canvas.height / 2
-		);
-
-		const texture = new THREE.CanvasTexture(canvas);
-		const material = new THREE.SpriteMaterial({
-			map: texture,
-			transparent: true,
-		});
-		const sprite = new THREE.Sprite(material);
-
-		sprite.position.copy(position);
-		sprite.position.multiplyScalar(1.1);
-		sprite.scale.set(4, 1, 1);
-
-		earthGroup.add(sprite);
-		this.labels.push(sprite);
+		// Simply return without creating any sprites or labels
+		this.labels.push(null);
 	}
 
 	updateMarkerSizes() {
@@ -1050,9 +1342,8 @@ class EarthViewEONET {
 	}
 
 	toggleLabels() {
-		this.labels.forEach((label) => {
-			label.visible = this.showLabels;
-		});
+		// Nothing to toggle since text banners have been removed
+		// Function kept as a stub for compatibility
 	}
 
 	animate() {
@@ -1075,14 +1366,25 @@ class EarthViewEONET {
 	}
 
 	filterEventsByType(eventType) {
+		// Check if the currently selected marker will become invisible
+		let selectedWillBeHidden = false;
+		if (this.selectedMarker) {
+			const selectedType = this.selectedMarker.userData.eventType;
+			selectedWillBeHidden =
+				eventType !== "all" && selectedType !== eventType;
+		}
+
 		this.markers.forEach((marker, index) => {
 			const visible =
 				eventType === "all" || marker.userData.eventType === eventType;
 			marker.visible = visible;
-			if (this.labels[index]) {
-				this.labels[index].visible = visible && this.showLabels;
-			}
 		});
+
+		// If the selected marker is now hidden, clear the selection
+		if (selectedWillBeHidden) {
+			this.clearHighlight();
+		}
+
 		this.updateEventCounter(eventType);
 	}
 
@@ -1107,12 +1409,64 @@ class EarthViewEONET {
 	showEventDetails(eventData) {
 		const detailsPanel = document.getElementById("event-details");
 		const eventInfo = document.getElementById("event-info");
+		console.log("Showing details for event:", eventData);
+
+		// Get category info
+		let categoryInfo = "";
+		if (eventData.categories && eventData.categories.length > 0) {
+			const category = eventData.categories[0];
+			const categoryId = category.id;
+
+			// Look up detailed category information
+			const fullCategory = getCategoryById(categoryId);
+			const emoji = fullCategory?.emoji || "📍";
+
+			if (fullCategory) {
+				categoryInfo = `
+				<p><strong>Type:</strong> ${emoji} ${fullCategory.title}</p>
+				<p><strong>Category Description:</strong> ${
+					fullCategory.description || "No description available"
+				}</p>
+				`;
+			} else {
+				categoryInfo = `<p><strong>Type:</strong> ${
+					category.title || "Unknown"
+				}</p>`;
+			}
+		} else {
+			categoryInfo = `<p><strong>Type:</strong> Unknown</p>`;
+		}
+
+		// Create source links HTML
+		let sourcesHtml = "";
+		if (eventData.sources && eventData.sources.length > 0) {
+			sourcesHtml = `<p><strong>Sources:</strong></p><div class="source-links">`;
+			eventData.sources.forEach((source) => {
+				if (source.url) {
+					sourcesHtml += `<a href="${
+						source.url
+					}" target="_blank" class="source-link-btn">${
+						source.id || "Source"
+					}</a>`;
+				}
+			});
+			sourcesHtml += `</div>`;
+		}
+
+		// Add category link if available
+		let categoryLink = "";
+		if (eventData.categories && eventData.categories.length > 0) {
+			const categoryId = eventData.categories[0].id;
+			const fullCategory = getCategoryById(categoryId);
+
+			if (fullCategory && fullCategory.link) {
+				categoryLink = `<a href="${fullCategory.link}" target="_blank" class="category-link-btn">View Category Details</a>`;
+			}
+		}
 
 		eventInfo.innerHTML = `
       <h4>${eventData.title}</h4>
-      <p><strong>Type:</strong> ${
-			eventData.categories?.[0]?.title || "Unknown"
-		}</p>
+      ${categoryInfo}
       <p><strong>Location:</strong> ${
 			eventData.geometry?.[0]?.coordinates?.join(", ") || "Unknown"
 		}</p>
@@ -1121,9 +1475,12 @@ class EarthViewEONET {
 		}</p>
       ${
 			eventData.link
-				? `<a href="${eventData.link}" target="_blank">More Info</a>`
+				? `<p><a href="${eventData.link}" target="_blank" class="main-link-btn">Event Details</a> ${categoryLink}</p>`
+				: categoryLink
+				? `<p>${categoryLink}</p>`
 				: ""
 		}
+      ${sourcesHtml}
     `;
 
 		detailsPanel.classList.remove("hidden");
@@ -1136,12 +1493,17 @@ class EarthViewEONET {
 	highlightMarker(marker) {
 		this.clearHighlight();
 		this.selectedMarker = marker;
-		marker.userData.mainMesh.material.emissiveIntensity = 0.8;
+		marker.userData.mainMesh.material.color.setHex(0xffffff); // Change to white when highlighted
 	}
 
 	clearHighlight() {
 		if (this.selectedMarker) {
-			this.selectedMarker.userData.mainMesh.material.emissiveIntensity = 0.3;
+			// Restore original color
+			const eventType = this.selectedMarker.userData.eventType;
+			const properties = this.eventTypes[eventType];
+			this.selectedMarker.userData.mainMesh.material.color.setHex(
+				properties.color
+			);
 			this.selectedMarker = null;
 		}
 	}
@@ -1152,16 +1514,31 @@ const earthEONET = new EarthViewEONET();
 
 // Control event listeners
 document.addEventListener("DOMContentLoaded", () => {
-	const filterButtons = document.querySelectorAll(".filter-btn");
+	// Initialize event limit display
+	document.getElementById("event-limit-value").textContent =
+		earthEONET.eventLimit;
 
-	filterButtons.forEach((button) => {
-		button.addEventListener("click", () => {
-			filterButtons.forEach((btn) => btn.classList.remove("active"));
-			button.classList.add("active");
+	// Set up filter button event listeners
+	document.querySelector(".filter-buttons").addEventListener("click", (e) => {
+		if (e.target.classList.contains("filter-btn")) {
+			// Remove active class from all buttons
+			document
+				.querySelectorAll(".filter-btn")
+				.forEach((btn) => btn.classList.remove("active"));
 
-			const filterType = button.id.replace("filter-", "");
+			// Add active class to clicked button
+			e.target.classList.add("active");
+
+			// Get filter type from button id
+			const filterType = e.target.id.replace("filter-", "");
+
+			// Apply filter
 			earthEONET.filterEventsByType(filterType);
-		});
+
+			// Clear any displayed event details when changing filters
+			earthEONET.hideEventDetails();
+			earthEONET.clearHighlight();
+		}
 	});
 
 	// Close details panel
@@ -1193,11 +1570,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Real-time toggle
 	realTimeCheckbox.addEventListener("change", (e) => {
 		if (e.target.checked) {
+			// When enabling real-time, sync to system time
 			sunlightSim.enableRealTime();
 			manualTimeSlider.disabled = true;
 			timeSpeedSlider.disabled = true;
 		} else {
-			sunlightSim.setManualTime(parseFloat(manualTimeSlider.value));
+			// When disabling real-time, continue from current sim time
+			const simTime = sunlightSim.getCurrentTime();
+			sunlightSim.setManualTime(simTime);
+			manualTimeSlider.value = simTime;
 			manualTimeSlider.disabled = false;
 			timeSpeedSlider.disabled = false;
 		}

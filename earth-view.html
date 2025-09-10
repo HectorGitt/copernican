@@ -5,6 +5,7 @@
 		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Earth View - NASA EONET Real-time Events</title>
+		<link rel="stylesheet" href="style.css" />
 	</head>
 	<body>
 		<div id="app"></div>
@@ -21,9 +22,22 @@
 			<div class="control-section">
 				<h3>🛰️ Live Events</h3>
 				<div id="event-counter">Loading events...</div>
-				<button id="refresh-data" class="refresh-btn">
-					🔄 Refresh Data
-				</button>
+				<label>
+					<input
+						type="range"
+						id="event-limit"
+						min="10"
+						max="10000"
+						step="10"
+						value="50"
+					/>
+					Event Limit: <span id="event-limit-value">50</span>
+				</label>
+				<div class="event-control-row">
+					<button id="refresh-data" class="refresh-btn">
+						🔄 Refresh Data
+					</button>
+				</div>
 			</div>
 
 			<div class="control-section">
