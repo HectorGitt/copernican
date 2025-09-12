@@ -111,12 +111,15 @@
 									<kbd>Space</kbd> - Pause/Resume animation
 								</li>
 								<li><kbd>R</kbd> - Reset camera</li>
-								<li><kbd>F</kbd> - Toggle fullscreen</li>
+								<li><kbd>F</kbd> - Toggle planet following</li>
 								<li><kbd>I</kbd> - Toggle info panel</li>
 								<li><kbd>C</kbd> - Toggle controls panel</li>
 								<li>
 									<kbd>1-9</kbd> - Focus on planets (Sun to
 									Neptune)
+								</li>
+								<li>
+									<kbd>Esc</kbd> - Stop following planet
 								</li>
 							</ul>
 						</div>
@@ -143,18 +146,62 @@
 							<input
 								type="range"
 								id="animation-speed"
+								min="0.01"
+								max="2"
+								step="0.01"
+								value="0.01"
+							/>
+							<span id="speed-value">0.01x</span>
+						</div>
+						<div class="control-group">
+							<label for="time-speed"
+								>Time Speed (Days/Second):</label
+							>
+							<input
+								type="range"
+								id="time-speed"
 								min="0"
-								max="5"
+								max="3650"
 								step="0.1"
 								value="1"
 							/>
-							<span id="speed-value">1.0x</span>
+							<span id="time-value">1 days/sec</span>
 						</div>
 						<div class="control-group">
 							<label for="pause-animation">
 								<input type="checkbox" id="pause-animation" />
 								Pause Animation
 							</label>
+						</div>
+						<div class="control-group">
+							<label for="follow-planet">
+								<input type="checkbox" id="follow-planet" />
+								Follow Planet
+							</label>
+						</div>
+						<div class="control-group">
+							<label for="date-input"
+								>Simulation Date & Time:</label
+							>
+							<input type="date" id="date-input" />
+							<input type="time" id="time-input" step="1" />
+						</div>
+						<div class="control-group">
+							<label>Quick Time Jumps:</label>
+							<div class="time-jump-buttons">
+								<button id="jump-1day" class="time-jump-btn">
+									+1 Day
+								</button>
+								<button id="jump-1month" class="time-jump-btn">
+									+1 Month
+								</button>
+								<button id="jump-1year" class="time-jump-btn">
+									+1 Year
+								</button>
+								<button id="jump-today" class="time-jump-btn">
+									Today
+								</button>
+							</div>
 						</div>
 						<div class="control-group">
 							<button id="reset-camera" class="control-btn">
@@ -166,6 +213,12 @@
 							<button id="toggle-fullscreen" class="control-btn">
 								Toggle Fullscreen
 							</button>
+							<button
+								id="recalculate-positions"
+								class="control-btn"
+							>
+								Recalculate Positions
+							</button>
 						</div>
 					</div>
 				</div>
@@ -176,7 +229,42 @@
 		<div class="mini-info-bar">
 			<span id="animation-status">Animation: ON</span>
 			<span id="camera-info">Camera: Free</span>
+			<div class="time-display">
+				<span id="simulation-date">2025-09-12</span>
+				<span id="simulation-time">00:00:00</span>
+			</div>
+			<span id="time-elapsed">Elapsed: 0 days</span>
 			<div class="mini-controls">
+				<div class="time-control">
+					<label for="time-multiplier" class="time-label"
+						>Time:</label
+					>
+					<select id="time-multiplier" class="time-select">
+						<option value="0">Paused</option>
+						<option value="0.000011574">Real-time</option>
+						<option value="1">1 day/sec</option>
+						<option value="30">1 month/sec</option>
+						<option value="365">1 year/sec</option>
+						<option value="3650">10 years/sec</option>
+						<option value="1000" selected>Fast</option>
+					</select>
+				</div>
+				<div class="time-jump-controls">
+					<button
+						id="time-backward"
+						class="time-jump-btn"
+						title="Jump back 1 day"
+					>
+						⏪
+					</button>
+					<button
+						id="time-forward"
+						class="time-jump-btn"
+						title="Jump forward 1 day"
+					>
+						⏩
+					</button>
+				</div>
 				<button id="info-btn" class="mini-btn">ℹ️</button>
 				<button id="controls-btn" class="mini-btn">🎛️</button>
 				<a href="earth-view.html" class="mini-btn" title="Earth View"

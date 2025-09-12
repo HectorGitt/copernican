@@ -17,8 +17,8 @@ html {
 #main-nav {
 	position: fixed;
 	top: 0;
-	left: 0px;
-	right: 00px;
+	left: 0;
+	width: 100%;
 	background: rgba(0, 0, 0, 0.05);
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	border-radius: 0 0 15px 15px;
@@ -28,6 +28,7 @@ html {
 	justify-content: space-between;
 	align-items: center;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	box-sizing: border-box;
 }
 
 .nav-brand {
@@ -163,7 +164,7 @@ html {
 	backdrop-filter: blur(20px);
 	border: 1px solid rgba(255, 255, 255, 0.15);
 	border-radius: 15px;
-	max-width: 320px;
+	width: 320px;
 	max-height: calc(100vh - 120px);
 	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 	transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -227,7 +228,7 @@ html {
 /* Planet Navigation */
 .planet-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+	grid-template-columns: repeat(2, 1fr);
 	gap: 10px;
 	margin-top: 12px;
 }
@@ -338,7 +339,7 @@ html {
 }
 
 .control-group input[type="range"] {
-	width: 100%;
+	width: 280px;
 	background: rgba(255, 255, 255, 0.1);
 	border-radius: 6px;
 	outline: none;
@@ -389,7 +390,7 @@ html {
 }
 
 .control-btn {
-	width: 100%;
+	width: 280px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -434,17 +435,198 @@ html {
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 	font-size: 12px;
 	color: #cccccc;
+	min-width: 650px;
+	max-width: 90%;
+	overflow-x: auto;
+
+	justify-content: space-between;
 }
 
 #animation-status,
 #camera-info {
 	font-weight: 500;
+	min-width: 100px;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.simulation-date {
+	color: #00d4ff;
+	font-weight: 600;
+	font-family: "Courier New", monospace;
+	background: rgba(0, 212, 255, 0.1);
+	padding: 2px 8px;
+	border-radius: 12px;
+	border: 1px solid rgba(0, 212, 255, 0.3);
+	min-width: 120px;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .mini-controls {
 	display: flex;
 	gap: 8px;
 	margin-left: auto;
+}
+
+.time-control {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-right: 10px;
+}
+
+.time-label {
+	font-size: 11px;
+	color: #cccccc;
+	font-weight: 500;
+}
+
+.time-select {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	color: #ffffff;
+	border-radius: 6px;
+	padding: 2px 6px;
+	font-size: 11px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	min-width: 80px;
+	width: 80px;
+	text-align: center;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background-image: none;
+	box-shadow: none;
+}
+
+.time-select:hover {
+	background: rgba(255, 255, 255, 0.15);
+}
+
+.time-select:focus,
+.time-select:active,
+.time-select:focus-visible,
+.time-select:focus-within {
+	outline: none;
+	border-color: #00d4ff;
+	box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+	background: rgba(0, 0, 0, 0.4) !important;
+	background-color: rgba(0, 0, 0, 0.4) !important;
+	-webkit-appearance: none !important;
+	-moz-appearance: none !important;
+	appearance: none !important;
+	background-image: none !important;
+	box-shadow: 0 0 8px rgba(0, 212, 255, 0.3) !important;
+}
+
+/* Enhanced Time Display */
+.time-display {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin: 0 15px;
+	font-size: 12px;
+	font-weight: 500;
+	min-width: 140px;
+}
+
+#simulation-date {
+	color: #00d4ff;
+	text-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+	min-width: 120px;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+#simulation-time {
+	color: #cccccc;
+	font-size: 11px;
+	margin-top: 2px;
+	min-width: 80px;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+#time-elapsed {
+	color: #4caf50;
+	font-size: 11px;
+	margin: 0 15px;
+	font-weight: 500;
+	text-shadow: 0 0 6px rgba(76, 175, 80, 0.3);
+	min-width: 130px;
+	width: auto;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Time Jump Controls */
+.time-jump-controls {
+	display: flex;
+	gap: 4px;
+	margin-right: 8px;
+}
+
+.time-jump-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	color: #ffffff;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 12px;
+	transition: all 0.3s ease;
+}
+
+.time-jump-btn:hover {
+	background: rgba(255, 255, 255, 0.15);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 6px rgba(255, 255, 255, 0.1);
+}
+
+.time-jump-btn:active {
+	transform: translateY(0);
+}
+
+/* Time Jump Buttons in Controls Panel */
+.time-jump-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.time-jump-buttons .time-jump-btn {
+	width: auto;
+	min-width: 70px;
+	height: 32px;
+	padding: 0 12px;
+	font-size: 12px;
+	font-weight: 500;
+	background: rgba(0, 212, 255, 0.1);
+	border: 1px solid rgba(0, 212, 255, 0.3);
+	color: #00d4ff;
+}
+
+.time-jump-buttons .time-jump-btn:hover {
+	background: rgba(0, 212, 255, 0.2);
+	border-color: rgba(0, 212, 255, 0.5);
+	box-shadow: 0 2px 8px rgba(0, 212, 255, 0.2);
 }
 
 .mini-btn {
@@ -539,11 +721,11 @@ html {
 		top: 60px;
 		right: 10px;
 		left: 10px;
-		max-width: none;
+		width: auto;
 		max-height: calc(100vh - 80px);
 	}
 
-	.planet-list {
+	.planet-grid {
 		grid-template-columns: 1fr;
 	}
 
@@ -552,11 +734,48 @@ html {
 		left: 10px;
 		padding: 6px 12px;
 		gap: 15px;
+		min-width: 400px;
+		max-width: 500px;
 	}
 
 	.info-item {
 		font-size: 11px;
 		gap: 4px;
+	}
+
+	.simulation-date {
+		min-width: 100px;
+	}
+
+	#simulation-date {
+		min-width: 100px;
+	}
+
+	#simulation-time {
+		min-width: 60px;
+	}
+
+	#time-elapsed {
+		min-width: 80px;
+		margin: 0 10px;
+	}
+
+	.time-display {
+		min-width: 120px;
+		margin: 0 10px;
+	}
+
+	#animation-status,
+	#camera-info {
+		min-width: 80px;
+	}
+
+	.control-group input[type="range"] {
+		width: 240px;
+	}
+
+	.control-btn {
+		width: 240px;
 	}
 }
 
@@ -572,6 +791,54 @@ html {
 	.control-group {
 		margin-bottom: 16px;
 		padding-bottom: 12px;
+	}
+
+	.mini-info-bar {
+		min-width: 350px;
+		max-width: 400px;
+		padding: 8px 12px;
+		gap: 10px;
+	}
+
+	.simulation-date {
+		min-width: 80px;
+		font-size: 11px;
+	}
+
+	#simulation-date {
+		min-width: 80px;
+		font-size: 11px;
+	}
+
+	#simulation-time {
+		min-width: 50px;
+		font-size: 10px;
+	}
+
+	#time-elapsed {
+		min-width: 60px;
+		font-size: 10px;
+		margin: 0 8px;
+	}
+
+	.time-display {
+		min-width: 100px;
+		margin: 0 8px;
+		font-size: 11px;
+	}
+
+	#animation-status,
+	#camera-info {
+		min-width: 60px;
+		font-size: 11px;
+	}
+
+	.control-group input[type="range"] {
+		width: 200px;
+	}
+
+	.control-btn {
+		width: 200px;
 	}
 }
 
