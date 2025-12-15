@@ -418,6 +418,50 @@ html {
 	margin-bottom: 0;
 }
 
+/* Date and Time Inputs in Control Panel */
+.control-group input[type="date"],
+.control-group input[type="time"] {
+	width: 100%;
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	color: #ffffff;
+	border-radius: 6px;
+	padding: 8px 12px;
+	font-size: 14px;
+	font-family: "Courier New", monospace;
+	margin-bottom: 8px;
+	outline: none;
+	transition: all 0.3s ease;
+}
+
+.control-group input[type="date"]:focus,
+.control-group input[type="time"]:focus {
+	border-color: #00d4ff;
+	background: rgba(255, 255, 255, 0.15);
+	box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+}
+
+.control-group input[type="date"]::-webkit-calendar-picker-indicator,
+.control-group input[type="time"]::-webkit-calendar-picker-indicator {
+	filter: invert(1);
+	cursor: pointer;
+	opacity: 0.7;
+	transition: opacity 0.3s ease;
+}
+
+.control-group input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.control-group input[type="time"]::-webkit-calendar-picker-indicator:hover {
+	opacity: 1;
+}
+
+/* Small Button Class */
+.small-btn {
+	padding: 8px 12px;
+	font-size: 12px;
+	width: auto;
+	display: inline-flex;
+}
+
 /* Mini Info Bar */
 .mini-info-bar {
 	position: fixed;

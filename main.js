@@ -158,7 +158,7 @@ scene.add(pointLight);
 class NavigationController {
 	constructor() {
 		this.animationSpeed = 0.01;
-		this.timeSpeed = 1; // Days per second
+		this.timeSpeed = 0; // Realtime by default (0 days/sec relative to simulation loop, but we'll handle realtime logic)
 		this.isPaused = false;
 		this.zoomSpeed = 1;
 		this.rotateSpeed = 1;
@@ -211,12 +211,12 @@ class NavigationController {
 
 		const timeValue = document.getElementById("time-value");
 		if (timeValue) {
-			timeValue.textContent = `${this.timeSpeed} days/sec`;
+			timeValue.textContent = "Realtime";
 		}
 
 		const timeMultiplier = document.getElementById("time-multiplier");
 		if (timeMultiplier) {
-			timeMultiplier.value = this.timeSpeed.toString();
+			timeMultiplier.value = "0"; // Set to Realtime option
 		}
 
 		// Initialize time displays
@@ -298,26 +298,20 @@ class NavigationController {
 			.getElementById("time-multiplier")
 			?.addEventListener("change", (e) => {
 				const value = parseFloat(e.target.value);
-				if (value === 0) {
-					this.isPaused = true;
-					const pauseCheckbox =
-						document.getElementById("pause-animation");
-					if (pauseCheckbox) {
-						pauseCheckbox.checked = true;
-					}
-					this.updateUI();
-				} else {
-					this.isPaused = false;
-					this.timeSpeed = value;
-					const pauseCheckbox =
-						document.getElementById("pause-animation");
-					if (pauseCheckbox) {
-						pauseCheckbox.checked = false;
-					}
-					this.updateUI();
+				// Value 0 is now "Realtime", not "Paused"
+				this.timeSpeed = value;
+				this.isPaused = false;
+
+				const pauseCheckbox =
+					document.getElementById("pause-animation");
+				if (pauseCheckbox) {
+					pauseCheckbox.checked = false;
 				}
+
+				this.updateUI();
+
 				document.getElementById("time-value").textContent =
-					value === 0 ? "Paused" : `${this.timeSpeed} days/sec`;
+					value === 0 ? "Realtime" : `${this.timeSpeed} days/sec`;
 			});
 
 		// Time input
@@ -328,6 +322,22 @@ class NavigationController {
 					.split(":")
 					.map(Number);
 				this.simulationDate.setHours(hours, minutes, seconds || 0);
+				this.recalculatePositions();
+			});
+
+		// Sync to current time button
+		document
+			.getElementById("sync-time-btn")
+			?.addEventListener("click", () => {
+				this.simulationDate = new Date();
+				this.recalculatePositions();
+			});
+
+		// Sync to current time button (mini panel)
+		document
+			.getElementById("sync-time-mini-btn")
+			?.addEventListener("click", () => {
+				this.simulationDate = new Date();
 				this.recalculatePositions();
 			});
 
@@ -976,7 +986,18 @@ class NavigationController {
 		this.lastUpdateTime = currentTime;
 
 		// Advance simulation time
-		const timeAdvance = this.timeSpeed * deltaTime; // Days to advance
+		let timeAdvance = 0;
+
+		if (this.timeSpeed === 0) {
+			// Realtime mode: advance by exactly the amount of real time passed
+			// 1 second of real time = 1 second of simulation time
+			// Convert seconds to days: 1 / (24 * 60 * 60)
+			timeAdvance = deltaTime / (24 * 60 * 60);
+		} else {
+			// Accelerated mode: advance by days per second
+			timeAdvance = this.timeSpeed * deltaTime;
+		}
+
 		this.simulationDate = new Date(
 			this.simulationDate.getTime() + timeAdvance * 24 * 60 * 60 * 1000
 		);
@@ -1010,7 +1031,10 @@ class NavigationController {
 		};
 
 		// Calculate rotation speed based on time elapsed and rotation period
-		const daysPerSecond = this.timeSpeed; // How many Earth days pass per second in simulation
+		// How many Earth days pass per second in simulation
+		// If timeSpeed is 0 (realtime), we use 1/(24*60*60) days per second
+		const daysPerSecond =
+			this.timeSpeed === 0 ? 1 / (24 * 60 * 60) : this.timeSpeed;
 		const baseRotationSpeed = (2 * Math.PI) / (24 * 60 * 60); // Base rotation speed for 1 Earth day
 
 		// Apply axial rotation to each planet
