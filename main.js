@@ -97,6 +97,31 @@ const createPlanet = (radius, texture, distance, ring) => {
 
 	// Add orbit to scene (orbit will be positioned at sun's center)
 	scene.add(planetOrbit);
+
+	// Create orbit line
+	const orbitPath = new THREE.EllipseCurve(
+		0,
+		0, // ax, aY
+		distance,
+		distance, // xRadius, yRadius
+		0,
+		2 * Math.PI, // aStartAngle, aEndAngle
+		false, // aClockwise
+		0 // aRotation
+	);
+
+	const points = orbitPath.getPoints(100);
+	const orbitGeometry = new THREE.BufferGeometry().setFromPoints(points);
+	const orbitMaterial = new THREE.LineBasicMaterial({
+		color: 0xffffff,
+		transparent: true,
+		opacity: 0.2,
+	});
+
+	const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
+	orbitLine.rotation.x = Math.PI / 2; // Rotate to lie flat on XZ plane
+	scene.add(orbitLine);
+
 	return { planet, planetOrbit };
 };
 
