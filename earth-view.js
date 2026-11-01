@@ -1,5 +1,3 @@
-import "./src/styles/base.css";
-import "./earth-view.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import earthTexture from "./src/img/earth.jpg";

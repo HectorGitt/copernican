@@ -1,5 +1,3 @@
-import "../styles/base.css";
-import "../styles/solar.css";
 import * as THREE from "three";
 import { BODIES, BODY_BY_ID } from "./data.js";
 import { createScene } from "./scene.js";
