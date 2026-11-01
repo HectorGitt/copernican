@@ -1,13 +1,19 @@
-import "./earth-view.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import earthTexture from "./src/img/earth.jpg";
 import starsTexture from "./src/img/stars.jpg";
 
+const escapeHtml = (value) =>
+	String(value ?? "").replace(
+		/[&<>"']/g,
+		(c) =>
+			({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+	);
+
 // Scene Setup
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x000011, 1);
+renderer.setClearColor(0x02030a, 1);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
@@ -481,21 +487,21 @@ class UserTimezoneMarker {
 		canvas.height = 56;
 
 		// Background (smaller)
-		context.fillStyle = "rgba(0, 100, 0, 0.85)";
+		context.fillStyle = "rgba(11, 15, 28, 0.88)";
 		context.fillRect(0, 0, canvas.width, canvas.height);
 
 		// Border
-		context.strokeStyle = "#00ff00";
+		context.strokeStyle = "#7cc4ff";
 		context.lineWidth = 2;
 		context.strokeRect(0, 0, canvas.width, canvas.height);
 
 		// Text (smaller font)
 		context.fillStyle = "#ffffff";
-		context.font = "bold 14px Arial";
+		context.font = "600 14px Inter, system-ui, sans-serif";
 		context.textAlign = "center";
-		context.fillText("📍 Your Location", canvas.width / 2, 22);
+		context.fillText("Your location", canvas.width / 2, 22);
 
-		context.font = "11px Arial";
+		context.font = "11px Inter, system-ui, sans-serif";
 		context.fillText(this.timezone, canvas.width / 2, 38);
 		context.fillText(
 			`${coords.lat.toFixed(1)}°, ${coords.lon.toFixed(1)}°`,
@@ -543,8 +549,8 @@ class UserTimezoneMarker {
 		const toggleBtn = document.getElementById("toggle-user-marker");
 		if (toggleBtn) {
 			toggleBtn.textContent = this.isVisible
-				? "👤 Hide My Location"
-				: "👤 Show My Location";
+				? "Hide my location"
+				: "Show my location";
 			toggleBtn.classList.toggle("active", this.isVisible);
 		}
 	}
@@ -893,16 +899,9 @@ class EarthViewEONET {
 			button.className = "filter-btn";
 			button.textContent = category.title;
 
-			// Set button background color to match category
+			// Tint the chip with the category colour
 			const color = new THREE.Color(category.color || 0xcccccc);
-			const r = Math.floor(color.r * 255);
-			const g = Math.floor(color.g * 255);
-			const b = Math.floor(color.b * 255);
-			button.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.7)`;
-
-			// Set text color (white or black) based on background brightness
-			const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-			button.style.color = brightness > 128 ? "#000" : "#fff";
+			button.style.setProperty("--chip", `#${color.getHexString()}`);
 
 			filterContainer.appendChild(button);
 		});
@@ -913,7 +912,7 @@ class EarthViewEONET {
 		if (!legendContainer) return;
 
 		// Clear existing legend
-		legendContainer.innerHTML = "<h4>🏷️ Event Types</h4>";
+		legendContainer.innerHTML = "<h4>Event types</h4>";
 
 		// Add a legend item for each category
 		this.categories.forEach((category) => {
@@ -980,9 +979,8 @@ class EarthViewEONET {
 			.addEventListener("click", () => {
 				controls.autoRotate = !controls.autoRotate;
 				const btn = document.getElementById("auto-rotate-btn");
-				btn.textContent = controls.autoRotate
-					? "⏸️ Stop Rotate"
-					: "🔄 Auto Rotate";
+				btn.setAttribute("aria-pressed", String(controls.autoRotate));
+				btn.classList.toggle("is-active", controls.autoRotate);
 			});
 
 		// Mouse interaction for marker selection
@@ -1430,9 +1428,9 @@ class EarthViewEONET {
 				}</p>
 				`;
 			} else {
-				categoryInfo = `<p><strong>Type:</strong> ${
+				categoryInfo = `<p><strong>Type:</strong> ${escapeHtml(
 					category.title || "Unknown"
-				}</p>`;
+				)}</p>`;
 			}
 		} else {
 			categoryInfo = `<p><strong>Type:</strong> Unknown</p>`;
@@ -1444,11 +1442,11 @@ class EarthViewEONET {
 			sourcesHtml = `<p><strong>Sources:</strong></p><div class="source-links">`;
 			eventData.sources.forEach((source) => {
 				if (source.url) {
-					sourcesHtml += `<a href="${
+					sourcesHtml += `<a href="${escapeHtml(
 						source.url
-					}" target="_blank" class="source-link-btn">${
+					)}" target="_blank" rel="noopener" class="source-link-btn">${escapeHtml(
 						source.id || "Source"
-					}</a>`;
+					)}</a>`;
 				}
 			});
 			sourcesHtml += `</div>`;
@@ -1461,22 +1459,22 @@ class EarthViewEONET {
 			const fullCategory = getCategoryById(categoryId);
 
 			if (fullCategory && fullCategory.link) {
-				categoryLink = `<a href="${fullCategory.link}" target="_blank" class="category-link-btn">View Category Details</a>`;
+				categoryLink = `<a href="${fullCategory.link}" target="_blank" rel="noopener" class="category-link-btn">View Category Details</a>`;
 			}
 		}
 
 		eventInfo.innerHTML = `
-      <h4>${eventData.title}</h4>
+      <h4>${escapeHtml(eventData.title)}</h4>
       ${categoryInfo}
       <p><strong>Location:</strong> ${
-			eventData.geometry?.[0]?.coordinates?.join(", ") || "Unknown"
+			escapeHtml(eventData.geometry?.[0]?.coordinates?.join(", ") || "Unknown")
 		}</p>
       <p><strong>Description:</strong> ${
-			eventData.description || "No description available"
+			escapeHtml(eventData.description || "No description available")
 		}</p>
       ${
 			eventData.link
-				? `<p><a href="${eventData.link}" target="_blank" class="main-link-btn">Event Details</a> ${categoryLink}</p>`
+				? `<p><a href="${escapeHtml(eventData.link)}" target="_blank" rel="noopener" class="main-link-btn">Event Details</a> ${categoryLink}</p>`
 				: categoryLink
 				? `<p>${categoryLink}</p>`
 				: ""
@@ -1564,8 +1562,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	const earthNav = document.getElementById("earth-nav");
 	const showControlsBtn = document.createElement("button");
 	showControlsBtn.id = "show-controls-btn";
-	showControlsBtn.className = "nav-btn";
-	showControlsBtn.textContent = "🎮 Controls";
+	showControlsBtn.className = "pill-btn";
+	showControlsBtn.type = "button";
+	showControlsBtn.textContent = "Controls";
 	showControlsBtn.style.display = "none";
 	showControlsBtn.addEventListener("click", toggleControlsPanel);
 	earthNav.appendChild(showControlsBtn);
@@ -1660,7 +1659,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	if (pausePlayBtn) {
 		pausePlayBtn.addEventListener("click", () => {
 			const isPaused = sunlightSim.togglePause();
-			pausePlayBtn.textContent = isPaused ? "▶️ Play" : "⏸️ Pause";
+			pausePlayBtn.textContent = isPaused ? "Play" : "Pause";
 			pausePlayBtn.classList.toggle("paused", isPaused);
 		});
 	}

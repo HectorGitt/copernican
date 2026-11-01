@@ -19,10 +19,22 @@
 		</script>
 		<!-- End Google Tag Manager -->
 		<meta charset="UTF-8" />
-		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Earth View - NASA EONET Real-time Events</title>
-		<link rel="stylesheet" href="style.css" />
+		<meta
+			name="description"
+			content="Live natural events from NASA EONET — wildfires, storms, volcanoes and more — on an interactive 3D Earth with real-time sunlight."
+		/>
+		<meta name="theme-color" content="#02030a" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="/src/styles/base.css" />
+		<link rel="stylesheet" href="/earth-view.css" />
+		<title>Copernican · Earth Events</title>
 	</head>
 	<body>
 		<!-- Google Tag Manager (noscript) -->
@@ -35,232 +47,131 @@
 			></iframe
 		></noscript>
 		<!-- End Google Tag Manager (noscript) -->
-		<div id="app"></div>
 
-		<!-- Navigation -->
-		<nav id="earth-nav">
-			<a href="index.html" class="nav-btn">🌌 Solar System</a>
-			<h1>🌍 Earth View - NASA EONET Events</h1>
-			<button id="auto-rotate-btn" class="nav-btn">🔄 Auto Rotate</button>
-		</nav>
+		<header class="topbar">
+			<a class="brand" href="index.html" aria-label="Copernican home">
+				<svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+					<circle cx="16" cy="16" r="5" fill="currentColor" />
+					<ellipse cx="16" cy="16" rx="13" ry="6.5" fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width="1.5" transform="rotate(-24 16 16)" />
+					<circle cx="27.5" cy="11" r="2" fill="var(--accent-2)" />
+				</svg>
+				<span class="brand__text">
+					<span class="brand__name">Copernican</span>
+					<span class="brand__tag">Live Earth events · NASA EONET</span>
+				</span>
+			</a>
 
-		<!-- Enhanced EONET Data Controls -->
-		<div id="earth-eonet-controls">
+			<nav class="view-switch" aria-label="Views">
+				<a href="index.html">Solar System</a>
+				<a href="earth-view.html" aria-current="page">Earth</a>
+			</nav>
+
+			<div id="earth-nav" class="topbar__actions">
+				<button id="auto-rotate-btn" class="icon-btn" type="button" title="Auto-rotate" aria-pressed="false">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" /><path d="M20 4v4.5h-4.5" /></svg>
+				</button>
+			</div>
+		</header>
+
+		<aside id="earth-eonet-controls" class="panel side-panel" aria-label="Earth controls">
 			<div class="controls-header">
-				<h3>🛰️ Earth Controls</h3>
-				<button id="close-controls" class="close-btn">×</button>
+				<div>
+					<p class="eyebrow">Live events</p>
+					<div id="event-counter" class="event-counter">Loading events…</div>
+				</div>
+				<button id="close-controls" class="icon-btn icon-btn--ghost" type="button" aria-label="Hide controls">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+				</button>
 			</div>
-			<div class="control-section">
-				<h3>🛰️ Live Events</h3>
-				<div id="event-counter">Loading events...</div>
-				<label>
-					<input
-						type="range"
-						id="event-limit"
-						min="10"
-						max="10000"
-						step="10"
-						value="50"
-					/>
-					Event Limit: <span id="event-limit-value">50</span>
+
+			<section class="control-section">
+				<div class="field">
+					<div class="field__row">
+						<label for="event-limit">Events to load</label>
+						<span id="event-limit-value" class="field__value">50</span>
+					</div>
+					<input type="range" id="event-limit" min="10" max="10000" step="10" value="50" />
+				</div>
+				<button id="refresh-data" class="pill-btn pill-btn--block" type="button">Refresh data</button>
+			</section>
+
+			<section class="control-section">
+				<h4>Filter by type</h4>
+				<div class="filter-buttons"></div>
+			</section>
+
+			<section class="control-section">
+				<h4>Sunlight</h4>
+				<div id="current-time" class="clock">
+					<div class="time-main">12:00</div>
+					<div class="time-details">Loading… · Local</div>
+				</div>
+
+				<div class="segmented" role="radiogroup" aria-label="Time zone">
+					<label><input type="radio" name="time-mode" id="local-time" checked /><span>Local</span></label>
+					<label><input type="radio" name="time-mode" id="utc-time" /><span>UTC</span></label>
+				</div>
+				<div id="timezone-info" class="timezone-info">Detecting timezone…</div>
+
+				<label class="switch-row">
+					<span>Real-time</span>
+					<input type="checkbox" id="real-time" class="switch" checked />
 				</label>
-				<div class="event-control-row">
-					<button id="refresh-data" class="refresh-btn">
-						🔄 Refresh Data
-					</button>
+
+				<div class="field">
+					<label for="manual-time">Time of day</label>
+					<input type="range" id="manual-time" min="0" max="24" step="0.1" value="12" disabled />
 				</div>
-			</div>
-
-			<div class="control-section">
-				<h4>📊 Filter Events</h4>
-				<div class="filter-buttons">
-					<button id="filter-all" class="filter-btn active">
-						All Events
-					</button>
-					<button id="filter-wildfires" class="filter-btn">
-						🔥 Wildfires
-					</button>
-					<button id="filter-volcanoes" class="filter-btn">
-						🌋 Volcanoes
-					</button>
-					<button id="filter-earthquakes" class="filter-btn">
-						🌍 Earthquakes
-					</button>
-					<button id="filter-storms" class="filter-btn">
-						🌪️ Storms
-					</button>
-					<button id="filter-floods" class="filter-btn">
-						🌊 Floods
-					</button>
+				<div class="field">
+					<label for="time-speed">Time speed</label>
+					<input type="range" id="time-speed" min="0.1" max="100" step="0.1" value="1" disabled />
 				</div>
-			</div>
 
-			<div class="control-section">
-				<h4>☀️ Sunlight Simulation</h4>
-				<div class="sunlight-controls">
-					<div class="time-display">
-						<label>Current Time:</label>
-						<span id="current-time">
-							<div class="time-main">12:00</div>
-							<div class="time-details">Loading... • Local</div>
-						</span>
-					</div>
-
-					<div class="timezone-controls">
-						<label>
-							<input
-								type="radio"
-								name="time-mode"
-								id="local-time"
-								checked
-							/>
-							🌍 Local Time
-						</label>
-						<label>
-							<input
-								type="radio"
-								name="time-mode"
-								id="utc-time"
-							/>
-							🌐 UTC Time
-						</label>
-						<div id="timezone-info" class="timezone-info">
-							Detecting timezone...
-						</div>
-					</div>
-
-					<div class="time-control-buttons">
-						<button id="pause-play-btn" class="time-control-btn">
-							⏸️ Pause
-						</button>
-					</div>
-
-					<label>
-						<input type="checkbox" id="real-time" checked />
-						Real-time Simulation
-					</label>
-
-					<label>
-						<input
-							type="range"
-							id="manual-time"
-							min="0"
-							max="24"
-							step="0.1"
-							value="12"
-							disabled
-						/>
-						Manual Time (Hours)
-					</label>
-
-					<label>
-						<input
-							type="range"
-							id="time-speed"
-							min="0.1"
-							max="100"
-							step="0.1"
-							value="1"
-							disabled
-						/>
-						Time Speed (x)
-					</label>
-
-					<div class="time-presets">
-						<button class="time-preset-btn" data-time="6">
-							🌅 Dawn
-						</button>
-						<button class="time-preset-btn" data-time="12">
-							☀️ Noon
-						</button>
-						<button class="time-preset-btn" data-time="18">
-							🌇 Dusk
-						</button>
-						<button class="time-preset-btn" data-time="0">
-							🌙 Midnight
-						</button>
-					</div>
+				<div class="time-presets">
+					<button class="time-preset-btn" type="button" data-time="6">Dawn</button>
+					<button class="time-preset-btn" type="button" data-time="12">Noon</button>
+					<button class="time-preset-btn" type="button" data-time="18">Dusk</button>
+					<button class="time-preset-btn" type="button" data-time="0">Midnight</button>
 				</div>
-			</div>
+				<button id="pause-play-btn" class="pill-btn pill-btn--block" type="button">Pause</button>
+			</section>
 
-			<div class="control-section">
-				<h4>🎨 Visual Settings</h4>
-				<div class="visual-controls">
-					<label>
-						<input
-							type="range"
-							id="marker-size"
-							min="0.1"
-							max="1"
-							step="0.1"
-							value="0.5"
-						/>
-						Marker Size
-					</label>
-					<label>
-						<input
-							type="range"
-							id="animation-speed"
-							min="0.1"
-							max="3"
-							step="0.1"
-							value="1"
-						/>
-						Animation Speed
-					</label>
-					<label>
-						<input type="checkbox" id="show-labels" checked />
-						Show Event Labels
-					</label>
-					<button
-						id="toggle-user-marker"
-						class="user-location-btn active"
-					>
-						👤 Hide My Location
-					</button>
+			<section class="control-section">
+				<h4>Display</h4>
+				<div class="field">
+					<label for="marker-size">Marker size</label>
+					<input type="range" id="marker-size" min="0.1" max="1" step="0.1" value="0.5" />
 				</div>
-			</div>
+				<div class="field">
+					<label for="animation-speed">Marker animation</label>
+					<input type="range" id="animation-speed" min="0.1" max="3" step="0.1" value="1" />
+				</div>
+				<label class="switch-row">
+					<span>Event labels</span>
+					<input type="checkbox" id="show-labels" class="switch" checked />
+				</label>
+				<button id="toggle-user-marker" class="pill-btn pill-btn--block user-location-btn active" type="button">Hide my location</button>
+			</section>
 
-			<div class="control-section legend">
-				<h4>🏷️ Event Types</h4>
-				<div class="legend-item">
-					<span class="marker wildfire"></span>Wildfire
-				</div>
-				<div class="legend-item">
-					<span class="marker volcano"></span>Volcano
-				</div>
-				<div class="legend-item">
-					<span class="marker earthquake"></span>Earthquake
-				</div>
-				<div class="legend-item">
-					<span class="marker storm"></span>Storm
-				</div>
-				<div class="legend-item">
-					<span class="marker flood"></span>Flood
-				</div>
-				<div class="legend-item">
-					<span class="marker drought"></span>Drought
-				</div>
-			</div>
-		</div>
+			<section class="control-section legend"></section>
+		</aside>
 
-		<!-- Event Details Panel -->
-		<div id="event-details" class="hidden">
+		<aside id="event-details" class="panel details-panel hidden" aria-label="Event details">
 			<div class="details-header">
-				<h3>Event Details</h3>
-				<button id="close-details">×</button>
+				<p class="eyebrow">Event</p>
+				<button id="close-details" class="icon-btn icon-btn--ghost" type="button" aria-label="Close details">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+				</button>
 			</div>
-			<div class="details-content">
-				<div id="event-info"></div>
-			</div>
-		</div>
+			<div id="event-info" class="details-content"></div>
+		</aside>
 
-		<!-- Loading Overlay -->
-		<div id="loading-overlay">
-			<div class="loading-content">
-				<div class="loading-spinner"></div>
-				<p>Loading Earth and NASA EONET data...</p>
-			</div>
+		<div id="loading-overlay" class="loader" role="status" aria-live="polite">
+			<svg class="loader__mark" viewBox="0 0 64 64" aria-hidden="true">
+				<circle cx="32" cy="32" r="12" fill="var(--accent-2)" />
+				<g class="loader__orbit"><ellipse cx="32" cy="32" rx="26" ry="26" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="1.5" /><circle cx="58" cy="32" r="3" fill="currentColor" /></g>
+			</svg>
+			<p class="loader__text">Fetching live events from NASA…</p>
 		</div>
 
 		<script type="module" src="earth-view.js"></script>
